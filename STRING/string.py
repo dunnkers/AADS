@@ -32,10 +32,10 @@ s_len = len(s)
 s_mid = s_len // 2 + 1  # this number is negligible, skip it
 printdebug(''.join(s))
 printdebug('s_len: ', s_len)
+printdebug('s_mid: ', s_mid)
 
 m = int(input())
 printdebug('m: %d' % m)
-
 
 
 # a = [int(x) for x in input().split()]
