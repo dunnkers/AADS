@@ -1,3 +1,4 @@
 a.out*
 .vscode/settings.json
 **/__pycache__
+.vscode/.ropeproject
