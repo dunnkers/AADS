@@ -13,6 +13,8 @@ import os
 import sys
 import math
 from collections import Counter
+from datetime import datetime
+startTime = datetime.now()
 
 # LOGGING
 def printdebug(*s):
@@ -26,18 +28,11 @@ if "TEST" in os.environ:
 printdebug("STRING")
 
 s = list(input())
-s_len = len(s)
-s_mid = s_len // 2 + 1  # this number is negligible, skip it
-printdebug('s_len: %d' % s_len)
-printdebug('s_mid: %d' % s_mid)
-
 m = int(input())
+s_mid = m // 2 + 1  # this number is negligible, skip it
+printdebug('s_len: %d' % m)
+printdebug('s_mid: %d' % s_mid)
 printdebug('m: %d' % m)
-
-def revsection(ai):
-    l = ai - 1
-    r = s_len - ai
-    s[l:r + 1] = reversed(s[l:r + 1])
 
 counts = Counter()
 for num in input().split():
@@ -48,8 +43,11 @@ for num in input().split():
 
 for ai in counts.items():
     if ai[1] % 2 == 1:
-        revsection(ai[0])
+        l = ai[0] - 1
+        r = m - ai[0]
+        s[l:r + 1] = reversed(s[l:r + 1])
+        # s[l:r + 1] = s[l:r + 1][::-1]
 
 print(''.join(s))
-
+printdebug(datetime.now() - startTime)
 
