@@ -48,22 +48,5 @@ for ai in counts.items():
         r = s_len - ai[0]
         s[l:r + 1] = reversed(s[l:r + 1])
 
-
 print(''.join(s))
 printdebug(datetime.now() - startTime)
-
-## non-working bytearray stuff.
-# s = input().encode('ascii')
-
-# in here:
-# for ai in counts.items():
-#     if ai[1] % 2 == 1:
-        # s[l:r + 1] = s[l:r + 1][::-1]
-
-        # for i in range((r - l) // 2): # half
-        #     printdebug('revving ', i)
-        #     tmp = s[l + i]
-            # s[l + i::1] = s[r - i::1]
-            # s[l + i] = s[r - i]
-            # s[r - i] = tmp
-# print(s.decode())
