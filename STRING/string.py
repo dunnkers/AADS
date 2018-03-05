@@ -29,8 +29,9 @@ printdebug("STRING")
 
 s = list(input())
 m = int(input())
-s_mid = m // 2 + 1  # this number is negligible, skip it
-printdebug('s_len: %d' % m)
+s_len = len(s)
+s_mid = s_len // 2 + 1  # this number is negligible, skip it
+printdebug('s_len: %d' % s_len)
 printdebug('s_mid: %d' % s_mid)
 printdebug('m: %d' % m)
 
@@ -44,10 +45,25 @@ for num in input().split():
 for ai in counts.items():
     if ai[1] % 2 == 1:
         l = ai[0] - 1
-        r = m - ai[0]
+        r = s_len - ai[0]
         s[l:r + 1] = reversed(s[l:r + 1])
-        # s[l:r + 1] = s[l:r + 1][::-1]
+
 
 print(''.join(s))
 printdebug(datetime.now() - startTime)
 
+## non-working bytearray stuff.
+# s = input().encode('ascii')
+
+# in here:
+# for ai in counts.items():
+#     if ai[1] % 2 == 1:
+        # s[l:r + 1] = s[l:r + 1][::-1]
+
+        # for i in range((r - l) // 2): # half
+        #     printdebug('revving ', i)
+        #     tmp = s[l + i]
+            # s[l + i::1] = s[r - i::1]
+            # s[l + i] = s[r - i]
+            # s[r - i] = tmp
+# print(s.decode())
