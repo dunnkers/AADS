@@ -12,50 +12,43 @@
 import os
 import sys
 import math
+from collections import Counter
 
 # LOGGING
-# DEBUG_LEVEL = logging.DEBUG if "TEST" in os.environ else logging.CRITICAL
-# logging.basicConfig(stream=sys.stderr, level=DEBUG_LEVEL)
-# REDIRECT STDIN
-if "TEST" in os.environ:
-    old_stdin = sys.stdin
-    sys.stdin = open('./STRING/3.in')
-
 def printdebug(*s):
     if "TEST" in os.environ:
         print(*s)
+# REDIRECT STDIN
+if "TEST" in os.environ:
+    old_stdin = sys.stdin
+    sys.stdin = open('./STRING/4.in')
 
 printdebug("STRING")
 
 s = list(input())
 s_len = len(s)
 s_mid = s_len // 2 + 1  # this number is negligible, skip it
-printdebug(''.join(s))
-printdebug('s_len: ', s_len)
-printdebug('s_mid: ', s_mid)
+printdebug('s_len: %d' % s_len)
+printdebug('s_mid: %d' % s_mid)
 
 m = int(input())
 printdebug('m: %d' % m)
 
-
-# a = [int(x) for x in input().split()]
-# print(a)
-# print(all_palindromes(a))
-
-for a in input().split():
-    aᵢ = int(a)
-
-    if aᵢ == s_mid:
-        printdebug('skipping')
-        continue
-    printdebug(aᵢ)
-
-    l = aᵢ - 1
-    r = s_len - aᵢ
-    printdebug('[l = %d, r = %d]' % (l, r))
-
+def revsection(ai):
+    l = ai - 1
+    r = s_len - ai
     s[l:r + 1] = reversed(s[l:r + 1])
-    printdebug(''.join(s))
+
+counts = Counter()
+for num in input().split():
+    ai = int(num)
+    if ai == s_mid:
+        continue
+    counts[ai] += 1
+
+for ai in counts.items():
+    if ai[1] % 2 == 1:
+        revsection(ai[0])
 
 print(''.join(s))
 
