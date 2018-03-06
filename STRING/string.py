@@ -38,15 +38,20 @@ printdebug('m: %d' % m)
 counts = Counter()
 for num in input().split():
     ai = int(num)
-    if ai == s_mid:
+    if ai >= s_mid:
         continue
     counts[ai] += 1
 
-for ai in counts.items():
-    if ai[1] % 2 == 1:
+oddcnt = 0
+for ai in sorted(counts.items()):
+    if (ai[1] + oddcnt) % 2 == 1:
         l = ai[0] - 1
-        r = s_len - ai[0]
-        s[l:r + 1] = reversed(s[l:r + 1])
+        r = s_len - ai[0] - 1
+        tmp = s[l]
+        s[l] = s[r]
+        s[r] = tmp
+    if ai[1] % 2 == 1:
+        oddcnt += 1
 
 print(''.join(s))
 printdebug(datetime.now() - startTime)
