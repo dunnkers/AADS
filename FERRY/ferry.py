@@ -34,7 +34,7 @@ d = [int(x) for x in input().split()]
 
 class Trip(object):
     """A trip is a ferry passing point"""
-    __slots__ = ['cost', 'factor', 'penalty', 'avoided', 'gain']
+    __slots__ = ['cost', 'factor', 'penalty', 'change']
 
     def __init__(self, cost, factor):
         self.cost = cost      # Ferry cost in cents
@@ -49,7 +49,8 @@ EURO = 100
 discontent = 0
 coins = m
 trips = []
-# sort key is `avoided - gain`; then the lowest penalty and highest gain comes first
+# sort key is `penalty - change`; then the lowest penalty and highest 
+# change/`gain` comes first
 paid = [] # TODO sort this.
 
 printdebug("FERRY")
@@ -59,6 +60,7 @@ printdebug('')
 
 for i in range(n):
     trip = Trip(cost=c[i], factor=d[i])
+    trips.append(trip)
     printdebug('FERRY', i)
     printdebug('cost', trip.cost, ', factor', trip.factor)
 
@@ -67,57 +69,55 @@ for i in range(n):
     if rem_cents == 0: # euros only
         printdebug('→ paying fit euros only')
         trip.penalty = 0        # no penalty
-    else:  # cents
-        change = EURO - rem_cents
-        penalty = change * trip.factor
-        if coins >= rem_cents:  # pay fit - no penalty
+        printdebug('')
+        continue
+    
+    # cents
+    change = EURO - rem_cents
+    trip.change = change
+    penalty = change * trip.factor
+    trip.penalty = penalty
+    if coins >= rem_cents:  # pay fit - no penalty
+        printdebug('→ paying fit with coins')
+        heapq.heappush(paid, (penalty - change, trip))
+        # transaction
+        coins -= rem_cents
+        printdebug('coins -=', rem_cents)
+    else:  # we need change
+
+        # before paying the change - is it more efficient 
+        # to have paid somewhere else?
+        shortage = rem_cents - coins
+        reverted = False
+        
+        if paid: # not empty 
+            pay = paid[0][1]
+            # does it gain enough coins to buy next one and
+            # avoids enough discontent
+            if pay.change >= shortage and pay.penalty < penalty:
+                printdebug('→ reverting trip to be able to pay fit with coins!')
+                coins += pay.change  # get this coin we could've gained earlier
+                discontent += pay.penalty  # take this penalty instead
+                printdebug('coins +=', pay.change)
+                printdebug('discontent +=', pay.penalty)
+                reverted = True
+                heapq.heappop(paid)
+
+        # transaction
+        if not reverted:
+            printdebug('→ paying with change')
+            coins += change
+            discontent += trip.penalty
+            printdebug('discontent +=', trip.penalty)
+        else:  # ⚠️  SAME AS `paying fit with coins` scenario
             printdebug('→ paying fit with coins')
-            trip.avoided = penalty
-            trip.gain = change
+            # paid.put((penalty, trip))
             heapq.heappush(paid, (penalty - change, trip))
             # transaction
             coins -= rem_cents
             printdebug('coins -=', rem_cents)
-        else:  # we need change
-
-            # before paying the change - is it more efficient 
-            # to have paid somewhere else?
-            # ...
-            shortage = rem_cents - coins
-            reverted = False
-            
-            if paid: # not empty 
-                pay = paid[0][1]
-                # does it gain enough coins to buy next one and
-                # avoids enough discontent
-                if pay.gain >= shortage and pay.avoided < penalty:
-                    printdebug('→ reverting trip to be able to pay fit with coins!')
-                    coins += pay.gain # get this coin we could've gained earlier
-                    discontent += pay.avoided  # take this penalty instead
-                    printdebug('coins +=', pay.gain)
-                    printdebug('discontent +=', pay.avoided)
-                    reverted = True
-                    heapq.heappop(paid)
-
-            # transaction
-            if not reverted:
-                trip.penalty = penalty
-                printdebug('→ paying with change')
-                coins += change
-                discontent += trip.penalty
-                printdebug('discontent +=', trip.penalty)
-            else:  # ⚠️  SAME AS `paying fit with coins` scenario
-                printdebug('→ paying fit with coins')
-                trip.avoided = penalty
-                trip.gain = change
-                # paid.put((penalty, trip))
-                heapq.heappush(paid, (penalty - change, trip))
-                # transaction
-                coins -= rem_cents
-                printdebug('coins -=', rem_cents)
 
     # WE TRAVELLED
-    trips.append(trip)
     printdebug('discontent =', discontent)
     printdebug('coins =', coins)
     printdebug('')
