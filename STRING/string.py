@@ -43,14 +43,17 @@ for num in input().split():
     counts[ai] += 1
 
 oddcnt = 0
-for ai in sorted(counts.items()):
-    if (ai[1] + oddcnt) % 2 == 1:
-        l = ai[0] - 1
-        r = s_len - ai[0] - 1
+for i in range(s_len // 2 + 1):
+    cnt = counts.get(i)
+    ai = cnt if cnt else 0
+    printdebug(ai)
+    if (ai + oddcnt) % 2 == 1:
+        l = i - 1
+        r = s_len - i
         tmp = s[l]
         s[l] = s[r]
         s[r] = tmp
-    if ai[1] % 2 == 1:
+    if ai % 2 == 1:
         oddcnt += 1
 
 print(''.join(s))
