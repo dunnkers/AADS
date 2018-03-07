@@ -21,7 +21,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./LIBRARY/3.in')
+    sys.stdin = open('./LIBRARY/1.in')
 
 printdebug("LIBRARY")
 
@@ -41,7 +41,7 @@ printdebug('b = ', b)
 
 for i, ai in enumerate(a):
     if ai > n:
-        a[i] = b[0]
+        a[i] = b[0] # first missing item
         b.pop(0)
         continue
     if i == 0:
@@ -57,5 +57,5 @@ for i, ai in enumerate(a):
         a[i - 1] = b[0]
     printdebug('same', ai, 'at idx', i)
     b.pop(0)
-        
-print(*a, sep=' ', end=' ')
+
+print(*a, sep=' ')
