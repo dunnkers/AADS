@@ -12,7 +12,7 @@
 import os
 import sys
 import math
-from queue import PriorityQueue
+import heapq
 from collections import namedtuple
 from datetime import datetime
 startTime = datetime.now()
@@ -49,6 +49,7 @@ EURO = 100
 discontent = 0
 coins = m
 trips = []
+# sort key is `avoided - gain`; then the lowest penalty and highest gain comes first
 paid = [] # TODO sort this.
 
 printdebug("FERRY")
@@ -73,8 +74,7 @@ for i in range(n):
             printdebug('→ paying fit with coins')
             trip.avoided = penalty
             trip.gain = change
-            # paid.put((penalty, trip))
-            paid.append(trip)
+            heapq.heappush(paid, (penalty - change, trip))
             # transaction
             coins -= rem_cents
             printdebug('coins -=', rem_cents)
@@ -86,8 +86,9 @@ for i in range(n):
             shortage = rem_cents - coins
             reverted = False
             
-            for pay in paid:
-                # does it gain enough coins to buy next one and 
+            if paid: # not empty 
+                pay = paid[0][1]
+                # does it gain enough coins to buy next one and
                 # avoids enough discontent
                 if pay.gain >= shortage and pay.avoided < penalty:
                     printdebug('→ reverting trip to be able to pay fit with coins!')
@@ -96,8 +97,7 @@ for i in range(n):
                     printdebug('coins +=', pay.gain)
                     printdebug('discontent +=', pay.avoided)
                     reverted = True
-                    paid.remove(pay)
-                    break
+                    heapq.heappop(paid)
 
             # transaction
             if not reverted:
@@ -111,7 +111,7 @@ for i in range(n):
                 trip.avoided = penalty
                 trip.gain = change
                 # paid.put((penalty, trip))
-                paid.append(trip)
+                heapq.heappush(paid, (penalty - change, trip))
                 # transaction
                 coins -= rem_cents
                 printdebug('coins -=', rem_cents)
@@ -124,41 +124,3 @@ for i in range(n):
 
 printdebug('discontent:')
 print(discontent)
-quit()
-
-# q = PriorityQueue()
-# Ferry = namedtuple('Ferry', 'total idx coins')
-# q.put(Ferry(0, 0, m))
-
-# least_disc = 10000000000 # 10^5 * 10^5 seems reasonably large
-# while not q.empty():
-#     item = q.get()
-#     printdebug('current ferry:', item)
-#     if item.idx == n: # ⚠️ Probably, this doesn't take the last penalty in account.
-#         least_disc = min(least_disc, item.total)
-#         continue
-#     cost = c[item.idx]                      # ferry cost
-#     discontent = d[item.idx]                # ferry discontent
-#     rem_cents = cost % 100
-#     if item.coins >= rem_cents:             # we can pay with cents
-#         coins = item.coins - rem_cents
-#         total = item.total
-#         idx = item.idx + 1
-#         q.put(Ferry(total, idx, coins))
-
-#     # if item.coins < rem_cents:              # we have to pay with euros
-#     change = 100 - rem_cents            # ferryman change
-#     coins = item.coins + change         # store in our wallet
-
-#     disc = change * discontent          # ferryman is not happy with change
-#     total = item.total + disc           # compute new total discontent
-
-#     idx = item.idx + 1
-#     q.put(Ferry(total, idx, coins))
-
-#     # pay either with 1-euros or cents
-    
-
-
-
-# print(least_disc)
