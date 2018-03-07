@@ -31,18 +31,17 @@ n, m = [int(x) for x in input().split()]
 c = [int(x) for x in input().split()]
 d = [int(x) for x in input().split()]
 
-# CONST
-EURO = 100
-
 class Trip(object):
     """A trip is a ferry passing point"""
-    __slots__ = ['idx', 'cost', 'factor', 'penalty', 'change']
+    __slots__ = ['idx', 'cost', 'factor', 'rem_cents', 'change', 'penalty']
 
     def __init__(self, idx, cost, factor):
         self.idx = idx
         self.cost = cost      # Ferry cost in cents
         self.factor = factor  # Discontent penalty factor
-        self.penalty = 0
+        self.rem_cents = cost % 100
+        self.change = 100 - self.rem_cents
+        self.penalty = self.change * factor
 
 class Daniel(object):
     """Records Daniel's trips and money"""
@@ -61,36 +60,31 @@ class Daniel(object):
         printdebug('coins +=', trip.change)
         printdebug('discontent +=', trip.penalty)
     
-    def payFit(self, trip, rem_cents):
+    def payFit(self, trip):
         printdebug('→ paying fit with coins')
         heapq.heappush(self.paid, (trip.penalty - trip.change, trip))
-        self.coins -= rem_cents
-        printdebug('coins -=', rem_cents)
+        self.coins -= trip.rem_cents
+        printdebug('coins -=', trip.rem_cents)
     
-    def revAndPayFit(self, trip, rem_cents, to_rev):
+    def revAndPayFit(self, trip, to_rev):
         printdebug('→ reverting ferry', to_rev.idx, 'to pay fit')
         self.payWithChange(to_rev)  # take penalty and change from to_rev
         heapq.heappop(self.paid)
-        self.payFit(trip, rem_cents)
+        self.payFit(trip)
 
     def pay(self, trip):
-        # PAY
-        rem_cents = trip.cost % EURO  # left to pay after paying euros
-        trip.change = EURO - rem_cents
-        trip.penalty = trip.change * trip.factor
-
-        if rem_cents == 0:
+        if trip.rem_cents == 0:
             printdebug('→ paying fit euros only')
-        elif self.coins >= rem_cents:  # pay fit with cents - no penalty
-            self.payFit(trip, rem_cents)
+        elif self.coins >= trip.rem_cents:  # pay fit with cents - no penalty
+            self.payFit(trip)
         else:  # we need change
-            shortage = rem_cents - self.coins
+            shortage = trip.rem_cents - self.coins
 
             # is it more efficient to have paid somewhere else?
             pay = self.paid[0][1] if self.paid else None  # queue not empty
             # enough gain to fix shortage and a penalty advantage
             if pay and pay.change >= shortage and pay.penalty < trip.penalty:
-                self.revAndPayFit(trip, rem_cents, pay)
+                self.revAndPayFit(trip, pay)
             else:
                 self.payWithChange(trip)
 
