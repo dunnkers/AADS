@@ -25,7 +25,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./FERRY/4.in')
+    sys.stdin = open('./FERRY/5.in')
 
 n, m = [int(x) for x in input().split()]
 c = [int(x) for x in input().split()]
@@ -54,25 +54,29 @@ class Daniel(object):
         self.paid = [] # priority queue
 
     def payWithChange(self, trip):
-        printdebug('→ paying with change')
+        printdebug('→ paying ferry', trip.idx, 'with change')
         self.coins += trip.change
         self.discontent += trip.penalty
         printdebug('coins +=', trip.change)
         printdebug('discontent +=', trip.penalty)
     
     def payFit(self, trip):
-        printdebug('→ paying fit with coins')
+        printdebug('→ paying ferry', trip.idx, 'fit with coins')
         heapq.heappush(self.paid, (trip.penalty - trip.change, trip))
         self.coins -= trip.rem_cents
         printdebug('coins -=', trip.rem_cents)
     
     def revAndPayFit(self, trip, to_rev):
-        printdebug('→ reverting ferry', to_rev.idx, 'to pay fit')
+        printdebug('→ reverting ferry', to_rev.idx)
+        self.coins += to_rev.rem_cents
+        printdebug('coins +=', to_rev.rem_cents)
         self.payWithChange(to_rev)  # take penalty and change from to_rev
         heapq.heappop(self.paid)
         self.payFit(trip)
 
     def pay(self, trip):
+        printdebug('[%d] cost %dct, discontent: %dct * %dx = %d' % 
+            (trip.idx, trip.cost, trip.change, trip.factor, trip.penalty))
         if trip.rem_cents == 0:
             printdebug('→ paying fit euros only')
         elif self.coins >= trip.rem_cents:  # pay fit with cents - no penalty
