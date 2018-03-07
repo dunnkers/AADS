@@ -33,7 +33,7 @@ d = [int(x) for x in input().split()]
 
 class Trip(object):
     """A trip is a ferry passing point"""
-    __slots__ = ['idx', 'cost', 'factor', 'rem_cents', 'change', 'penalty']
+    __slots__ = ['idx', 'cost', 'factor', 'rem_cents', 'change', 'penalty', 'gain']
 
     def __init__(self, idx, cost, factor):
         self.idx = idx
@@ -42,6 +42,7 @@ class Trip(object):
         self.rem_cents = cost % 100
         self.change = 100 - self.rem_cents
         self.penalty = self.change * factor
+        self.gain = self.change + self.rem_cents
 
 class Daniel(object):
     """Records Daniel's trips and money"""
@@ -71,7 +72,8 @@ class Daniel(object):
         self.coins += to_rev.rem_cents
         printdebug('coins +=', to_rev.rem_cents)
         self.payWithChange(to_rev)  # take penalty and change from to_rev
-        heapq.heappop(self.paid)
+        # heapq.heappop(self.paid)
+        # self.paid.remove()
         self.payFit(trip)
 
     def pay(self, trip):
@@ -85,12 +87,31 @@ class Daniel(object):
             shortage = trip.rem_cents - self.coins
 
             # is it more efficient to have paid somewhere else?
-            pay = self.paid[0][1] if self.paid else None  # queue not empty
-            # enough gain to fix shortage and a penalty advantage
-            if pay and pay.change >= shortage and pay.penalty < trip.penalty:
-                self.revAndPayFit(trip, pay)
-            else:
+            # pay = self.paid[0][1] if self.paid else None  # queue not empty
+            
+            did_rev = False
+            if self.paid: # queue not empty
+                rev_penalty = -1
+                i = 0
+                while rev_penalty < trip.penalty:
+                    might_rev = self.paid[i][1]
+                    rev_penalty = might_rev.penalty
+                    # enough gain to fix shortage and a penalty advantage
+                    if might_rev.gain >= shortage and rev_penalty < trip.penalty:
+                        printdebug('this one!!!!! ferry', might_rev.idx)
+                        self.revAndPayFit(trip, might_rev)
+                        self.paid.remove(self.paid[i])
+                        did_rev = True
+                        break
+                    i += 1
+                    
+            if not did_rev:
                 self.payWithChange(trip)
+
+            # if pay and pay.change >= shortage and pay.penalty < trip.penalty:
+            #     self.revAndPayFit(trip, pay)
+            # else:
+            #     self.payWithChange(trip)
 
 daniel = Daniel(m)
 
