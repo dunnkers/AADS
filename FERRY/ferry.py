@@ -36,11 +36,13 @@ EURO = 100
 
 class Trip(object):
     """A trip is a ferry passing point"""
-    __slots__ = ['cost', 'factor', 'penalty', 'change']
+    __slots__ = ['idx', 'cost', 'factor', 'penalty', 'change']
 
-    def __init__(self, cost, factor):
+    def __init__(self, idx, cost, factor):
+        self.idx = idx
         self.cost = cost      # Ferry cost in cents
         self.factor = factor  # Discontent penalty factor
+        self.penalty = 0
 
 class Daniel(object):
     """Records Daniel's trips and money"""
@@ -66,7 +68,7 @@ class Daniel(object):
         printdebug('coins -=', rem_cents)
     
     def revAndPayFit(self, trip, rem_cents, to_rev):
-        printdebug('→ reverting trip to be able to pay fit with coins!')
+        printdebug('→ reverting ferry', to_rev.idx, 'to pay fit')
         self.payWithChange(to_rev)  # take penalty and change from to_rev
         heapq.heappop(self.paid)
         self.payFit(trip, rem_cents)
@@ -74,16 +76,12 @@ class Daniel(object):
     def pay(self, trip):
         # PAY
         rem_cents = trip.cost % EURO  # left to pay after paying euros
-        if rem_cents == 0:  # euros only
-            printdebug('→ paying fit euros only')
-            trip.penalty = 0        # no penalty
-            return
-
-        # cents
         trip.change = EURO - rem_cents
         trip.penalty = trip.change * trip.factor
 
-        if self.coins >= rem_cents:  # pay fit - no penalty
+        if rem_cents == 0:
+            printdebug('→ paying fit euros only')
+        elif self.coins >= rem_cents:  # pay fit with cents - no penalty
             self.payFit(trip, rem_cents)
         else:  # we need change
             shortage = rem_cents - self.coins
@@ -104,9 +102,8 @@ printdebug(daniel.coins, 'coins')
 printdebug('')
 
 for i in range(n):
-    trip = Trip(cost=c[i], factor=d[i])
+    trip = Trip(idx = i, cost=c[i], factor=d[i])
     printdebug('FERRY', i)
-    printdebug('cost', trip.cost, ', factor', trip.factor)
     daniel.pay(trip)
     printdebug('discontent =', daniel.discontent)
     printdebug('coins =', daniel.coins)
