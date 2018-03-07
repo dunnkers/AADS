@@ -70,10 +70,8 @@ for i in range(n):
         continue
     
     # cents
-    change = EURO - rem_cents
-    trip.change = change
-    penalty = change * trip.factor
-    trip.penalty = penalty
+    trip.change = EURO - rem_cents
+    trip.penalty = trip.change * trip.factor
 
     if coins < rem_cents: # we need change
         shortage = rem_cents - coins
@@ -82,10 +80,11 @@ for i in range(n):
         pay = paid[0][1] if paid else None # queue not empty
         # does it gain enough coins to buy next one and
         # avoids enough discontent
-        if not pay or pay.change < shortage or pay.penalty >= penalty:
+        if not pay or pay.change < shortage or pay.penalty >= trip.penalty:
             printdebug('→ paying with change')
-            coins += change
+            coins += trip.change
             discontent += trip.penalty
+            printdebug('coins +=', trip.change)
             printdebug('discontent +=', trip.penalty)
             # ... not added to heap??
             continue
@@ -97,10 +96,10 @@ for i in range(n):
         printdebug('coins +=', pay.change)
         printdebug('discontent +=', pay.penalty)
         heapq.heappop(paid)
-
+        # continue onto paying fit...
     if coins >= rem_cents:  # pay fit - no penalty
         printdebug('→ paying fit with coins')
-        heapq.heappush(paid, (penalty - change, trip))
+        heapq.heappush(paid, (trip.penalty - trip.change, trip))
         coins -= rem_cents
         printdebug('coins -=', rem_cents)
 
