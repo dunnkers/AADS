@@ -6,9 +6,6 @@
 import os
 import sys
 import math
-from datetime import datetime
-from queue import Queue
-startTime = datetime.now()
 
 # LOGGING
 def printdebug(*s):
