@@ -1,6 +1,6 @@
 # Author: 		Jeroen Overschie
 # S-number:		s2995697
-# Date:			06-03-2018
+# Date:			20-03-2018
 # Challenge:	COLOR
 
 import os
@@ -18,10 +18,11 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./COLOR/4.in')
+    sys.stdin = open('./COLOR/5.in')
 
 def findColors(graph):
     red_colored = 0
+    any_cool_coloring = False
 
     while len(graph) > 0:
         # since we only have 2 colors, we only have to invert. we choose True and
@@ -30,18 +31,27 @@ def findColors(graph):
             True: 0,  # a color, e.g. red
             False: 0  # a color, e.g. blue
         }
+        coloredNodes = {}
 
         def colorNode(node, color):
             colors[color] += 1
+            coloredNodes[node] = color
             neighbors = graph.pop(node)
             for neighbor in neighbors:
+                if neighbor in coloredNodes and coloredNodes[neighbor] == color:
+                    return False
                 if neighbor in graph:
                     colorNode(neighbor, not color)  # invert
+            return True
 
         first = next(iter(graph.keys()))
-        colorNode(first, True)
-        red_colored += max(colors.values())  # possibly invert drawing
+        result = colorNode(first, True)
+        if result:
+            any_cool_coloring = True 
+            red_colored += max(colors.values())  # possibly invert drawing
     
+    if not any_cool_coloring:
+        return False
     return red_colored
 
 t = int(input())
