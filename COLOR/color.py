@@ -31,43 +31,18 @@ def findColors(graph):
             False: 0  # a color, e.g. blue
         }
 
-        queue = Queue() # might've been a priority queue based on valency --
-        queue.put((True, next(iter(graph.keys())))) # arbitrary item
-        while not queue.empty(): # do a coloring
-            # dequeue
-            item = queue.get()
-            color = item[0]
-            node = item[1]
-
-            # coloring
+        def colorNode(node, color):
             colors[color] += 1
             neighbors = graph.pop(node)
             for neighbor in neighbors:
                 if neighbor in graph:
-                    queue.put((not color, neighbor))
+                    colorNode(neighbor, not color)  # invert
+
+        first = next(iter(graph.keys()))
+        colorNode(first, True)
         red_colored += max(colors.values())  # possibly invert drawing
     
     return red_colored
-    # # first node
-    # # colors[node] = 0
-    
-    # color_1 = 0
-    # color_2 = 0
-    
-    # def check_neighbors(clr, vertices):
-    #     return all(clr != colors.get(n) for n in vertices)
-
-    # for node, adj_vertices in graph.items():
-    #     if check_neighbors(0, adj_vertices): # all neighbors are not color 0
-    #         colors[node] = 0
-    #         color_1 += 1
-    #     elif check_neighbors(1, adj_vertices):  # all neighbors are not color 0
-    #         colors[node] = 1
-    #         color_2 += 1
-    #     else:
-    #         return None # cannot find any color for this vertex
-
-    # return max(color_1, color_2)
 
 t = int(input())
 for _ in range(t):
