@@ -16,7 +16,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./BANK/2.in')
+    sys.stdin = open('./BANK/3.in')
 
 # SCAN INPUT
 [n, m, o, p] = [int(x) for x in input().split()]
@@ -48,12 +48,13 @@ def dijkstra(graph, node, dests, dists, prev, visited, results):
         while pred != None:
             path.append(pred)
             pred = prev.get(pred, None)
-        # printdebug('found a path: '+str(path)+" cost="+str(dists[node]))
+        printdebug('found a path: '+str(path)+" cost="+str(dists[node]))
         results.append((node, dists[node]))
         dests.remove(node)
-
+        yield (node, dists[node])
     if len(dests) == 0:  # we computed paths to all destinations
-        return results
+        # yield results
+        return None
     else:
         if not visited: # visited is empty
             dists[node] = 0
@@ -73,8 +74,10 @@ def dijkstra(graph, node, dests, dists, prev, visited, results):
                 unvisited[k] = dists.get(k, float('inf')) # compare to infinity
                 
         newNode = min(unvisited, key=unvisited.get)
-        return dijkstra(graph, newNode, dests, dists, prev, visited, results)
+        yield from dijkstra(graph, newNode, dests, dists, prev, visited, results)
 
+def reachable():
+    pass
 
 def rob_bank(graph, start, end, banks):
     bank_paths = do_dijkstra(graph, end, banks.copy())
@@ -85,11 +88,11 @@ def rob_bank(graph, start, end, banks):
         printdebug('testing bank', bank_node, 'endcost', endcost)
         if endcost >= p:
             return -1
-        start_to_bank = do_dijkstra(graph, bank_node, [start])[0]
+        start_to_bank = next(do_dijkstra(graph, bank_node, [start])) # first
         if start_to_bank: # bank is reachable from start
             (start_node, startcost) = start_to_bank
             printdebug('found a path from bank to start', start_node, 'cost', startcost)
             return startcost + endcost
-    print('-1')
+    return -1
 
 print(rob_bank(graph, start, end, banks))
