@@ -8,6 +8,11 @@ import sys
 import math
 import queue
 
+# LOGGING
+def printdebug(*s):
+    if "TEST" in os.environ:
+        print(*s)
+
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
@@ -30,61 +35,31 @@ for _ in range(m): # scan weighted edges
 queue = queue.Queue()
 queue.put(start)
 
+def dodijkstra(graph, src, dests):
+    return dijkstra(graph, src, 
+    dests if isinstance(dests, list) else [dests], [], {}, {}, [])
 
-# def bfs_paths(graph, start, goal):
-#     queue = [(start, [start])]
-#     while queue:
-#         (vertex, path) = queue.pop(0)
-#         for next in graph[vertex] - set(path):
-#             if next == goal:
-#                 yield path + [next]
-#             else:
-#                 queue.append((next, path + [next]))
-
-
-# paths = list(bfs_paths(graph, start, end))
-# print(paths)
-
-
-visited = set()
-while not queue.empty():
-    vertex = queue.get()
-    if vertex not in visited:
-        print('visiting', vertex)
-        visited.add(vertex)
-        neighbors = graph[vertex].items()
-        for neighbor in neighbors:
-            (node, dist) = neighbor
-            if node not in visited:
-                queue.put(node)
-    pass
-
-
-print(-1)
-
-from collections import defaultdict
-from heapq import heappop, heappush
-
-
-def dijkstra(graph, src, dest, visited=[], distances={}, predecessors={}):
+def dijkstra(graph, src, dests, visited, distances, predecessors, results):
     """ calculates a shortest path tree routed in src
     """
     # a few sanity checks
     if src not in graph:
-        raise TypeError('The root of the shortest path tree cannot be found')
-    if dest not in graph:
-        raise TypeError('The target of the shortest path cannot be found')
-    # ending condition
-    if src == dest:
+        return None
+    if src in dests:
         # We build the shortest path and display it
         path = []
-        pred = dest
+        pred = src
         while pred != None:
             path.append(pred)
             pred = predecessors.get(pred, None)
-        print('shortest path: '+str(path)+" cost="+str(distances[dest]))
+        printdebug('a shortest path: '+str(path)+" cost="+str(distances[src]))
+        results.append((src, distances[src]))
+        dests.remove(src)
+    # ending condition
+    if len(dests) == 0:
+        return results
     else:
-        # if it is the initial  run, initializes the cost
+        # if it is the initial run, initializes the cost
         if not visited:
             distances[src] = 0
         # visit the neighbors
@@ -104,7 +79,7 @@ def dijkstra(graph, src, dest, visited=[], distances={}, predecessors={}):
             if k not in visited:
                 unvisited[k] = distances.get(k, float('inf'))
         x = min(unvisited, key=unvisited.get)
-        dijkstra(graph, x, dest, visited, distances, predecessors)
+        return dijkstra(graph, x, dests, visited, distances, predecessors, results)
 
 
 # graph = {'s': {'a': 2, 'b': 1},
@@ -113,4 +88,22 @@ def dijkstra(graph, src, dest, visited=[], distances={}, predecessors={}):
 #         'c': {'a': 2, 'd': 7, 't': 4},
 #         'd': {'b': 1, 'c': 11, 't': 5},
 #         't': {'c': 3, 'd': 5}}
-dijkstra(graph, start, end)
+bank_paths = dodijkstra(graph, end, banks.copy())
+if not bank_paths:
+    print('-1')
+    exit()
+printdebug('computed paths from end to bank(s).')
+for (bank_node, endcost) in bank_paths:
+    printdebug('testing bank', bank_node, 'endcost', endcost)
+    if endcost >= p:
+        print('-1')
+        break
+    start_to_bank = dodijkstra(graph, bank_node, [start])[0]
+    if not start_to_bank:
+        break
+    else:
+        (start_node, startcost) = start_to_bank
+        printdebug('found a path from bank to start', start_node, 'cost', startcost)
+        print(startcost + endcost)
+        exit(0)
+print('-1')
