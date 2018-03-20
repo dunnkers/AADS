@@ -64,11 +64,8 @@ def DijkstraSearch(graph, n, start, targets):  # `n` vertices
 
 
 # PRE-COMPUTE ALL PATHS FROM START -> BANKS
-reachability = dict.fromkeys(banks, False)
-# can be a list/dict comprehension too,..
-for (bank, cost) in DijkstraSearch(graph, n, start, banks):
-    reachability[bank] = cost
-# printdebug('reachability =', reachability)
+reachability = {bank: cost for (
+    bank, cost) in DijkstraSearch(graph, n, start, banks)}
 
 start_paths = Dijkstra(graph, n, start)
 printdebug(start_paths)
