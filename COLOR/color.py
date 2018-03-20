@@ -43,6 +43,8 @@ def findColors(graph):
 
         first = next(iter(graph.keys()))
         result = colorNode(first, True)
+        if not result:
+            return False
         if result:
             any_cool_coloring = True 
             red_colored += max(colors.values())  # possibly invert drawing
