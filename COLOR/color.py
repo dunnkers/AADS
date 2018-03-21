@@ -15,7 +15,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./COLOR/6.in')
+    sys.stdin = open('./COLOR/2.in')
 
 def color(graph):
     src = next(iter(graph.keys()))
@@ -29,14 +29,13 @@ def color(graph):
                 colored[adj] = 1 - colored[node]
                 colors[colored[adj]] += 1
                 queue.append(adj)
+            elif adj == node:
+                return -1 # self loop
             elif colored[adj] == colored[node]:  # not allowed
                 return -1
     return max(colors)
 
 def bipartite(graph):
-    if not graph:
-        return 0
-    
     tot = 0
     while graph:
         clr = color(graph)
