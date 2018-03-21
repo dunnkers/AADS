@@ -34,7 +34,7 @@ for _ in range(m): # scan weighted edges
 
 
 # DIJKSTRA
-def dijkstra(graph, n, start, targets, lengths = None):  # `n` vertices
+def dijkstra(graph, n, start, targets):  # `n` vertices
     queue = [(0, start)] # init queue
     L = [None] * (n + 1) # path lengths. using an array here is faster than dict.
     while queue:
@@ -45,26 +45,28 @@ def dijkstra(graph, n, start, targets, lengths = None):  # `n` vertices
             L[node] = path_len
             for w, edge_len in graph[node].items():  # neighbors
                 if L[w] is None:  # not visited yet
-                    # if lengths and w in lengths:
-                    #     edge_len += lengths[w]
                     heappush(queue, (path_len + edge_len, w))
 
 
 # PRE-COMPUTE ALL PATHS FROM START -> BANKS
-rob = {bank: cost for (bank, cost) in dijkstra(graph, n, start, banks)}
+# rob = {bank: cost for (bank, cost) in dijkstra(graph, n, start, banks)}
 
 # we only compute bank distances for banks we can reach from start
 # hide = {bank: cost for (bank, cost) in dijkstra(graph, n, end, rob.keys(), rob)}
 
-robberies = [] # possible robberies
-for (bank, cost) in dijkstra(graph, n, end, rob.keys(), rob):
+robberies = {} # possible robberies
+for (bank, cost) in dijkstra(graph, n, end, banks):
     if cost < p:
-        printdebug('robbing bank', bank)
-        # print(cost + rob[bank])
-        robberies.append(cost + rob[bank])
+        printdebug('(possibly) robbing bank', bank)
+        robberies[bank] = cost
     else:
         break
 if robberies:
-    print(min(robberies))
+    to_rob = []
+    for (bank, cost) in dijkstra(graph, n, start, robberies.keys()):
+        heappush(to_rob, (cost + robberies[bank], bank))
+        
+    cost, rob = heappop(to_rob)
+    print(cost)
 else:
     print(-1)
