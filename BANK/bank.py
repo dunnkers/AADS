@@ -7,6 +7,7 @@ import os
 import sys
 import math
 from heapq import heappush, heappop
+from collections import Counter
 
 # LOGGING
 def printdebug(*s):
@@ -16,7 +17,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./BANK/3.in')
+    sys.stdin = open('./BANK/start_bank_dist.in')
 
 # SCAN INPUT
 [n, m, o, p] = [int(x) for x in input().split()]
@@ -32,24 +33,10 @@ for _ in range(m): # scan weighted edges
 [start, end] = [int(x) for x in input().split()]
 
 
-# # DIJKSTRA
-def Dijkstra(graph, n, start): # `n` vertices
-    A = [None] * (n + 1) # using an array here is faster than dict..
-    queue = [(0, start)]
-    while queue:
-        path_len, v = heappop(queue)
-        if A[v] is None:  # v is unvisited
-            A[v] = path_len
-            for w, edge_len in graph[v].items(): # neighbors
-                if A[w] is None: # not visited yet
-                    heappush(queue, (path_len + edge_len, w))
-
-    return [0 if x is None else x for x in A]
-
-
-def dijkstra(graph, n, start, targets):  # `n` vertices
+# DIJKSTRA
+def dijkstra(graph, n, start, targets, lengths = None):  # `n` vertices
     queue = [(0, start)] # init queue
-    L = [None] * (n + 1) # path lenghts. using an array here is faster than dict.
+    L = [None] * (n + 1) # path lengths. using an array here is faster than dict.
     while queue:
         path_len, node = heappop(queue)
         if L[node] is None and node in graph:  # node is unvisited
@@ -58,22 +45,20 @@ def dijkstra(graph, n, start, targets):  # `n` vertices
             L[node] = path_len
             for w, edge_len in graph[node].items():  # neighbors
                 if L[w] is None:  # not visited yet
+                    # if lengths and w in lengths:
+                    #     edge_len += lengths[w]
                     heappush(queue, (path_len + edge_len, w))
 
 
 # PRE-COMPUTE ALL PATHS FROM START -> BANKS
-reachability = {bank: cost for (bank, cost) in dijkstra(graph, n, start, banks)}
+rob = {bank: cost for (bank, cost) in dijkstra(graph, n, start, banks)}
 
-# start_paths = Dijkstra(graph, n, start)
-# printdebug(start_paths)
+# we only compute bank distances for banks we can reach from start
+# hide = {bank: cost for (bank, cost) in dijkstra(graph, n, end, rob.keys(), rob)}
 
-for (bank, cost) in dijkstra(graph, n, end, banks):
-    if cost < p and bank in reachability:
+for (bank, cost) in dijkstra(graph, n, end, rob.keys(), rob):
+    if cost < p and bank in rob:
         printdebug('robbing bank', bank)
-        print(cost + reachability[bank])
+        print(cost + rob[bank])
         exit()
 print(-1)
-
-
-# for path in Dijkstra(graph, n, start):
-#     print('path from start to vertex', _, 'costs', path)
