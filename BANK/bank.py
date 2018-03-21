@@ -33,16 +33,20 @@ for _ in range(m): # scan weighted edges
 
 
 # DIJKSTRA
-def dijkstra(queue, L, graph, targets):  # `n` vertices
+def dijkstra(graph, n, start, banks, p, targets):  # `n` vertices
+    queue = [(0, start, False)]  # init queue
+    L = [None] * (n + 1)  # path lengths. using an array here is faster than dict.
     while queue:
-        path_len, node = heappop(queue)
+        path_len, node, tobank = heappop(queue)
         if L[node] is None and node in graph:  # node is unvisited
+            if node in banks and path_len < p:
+                tobank = path_len
             if node in targets:
-                yield (node, path_len)
+                yield (node, path_len, tobank)
             L[node] = path_len
             for w, edge_len in graph[node].items():  # neighbors
                 if L[w] is None:  # not visited yet
-                    heappush(queue, (path_len + edge_len, w))
+                    heappush(queue, (path_len + edge_len, w, tobank))
 
 
 # PRE-COMPUTE ALL PATHS FROM START -> BANKS
@@ -52,30 +56,20 @@ def dijkstra(queue, L, graph, targets):  # `n` vertices
 # hide = {bank: cost for (bank, cost) in dijkstra(graph, n, end, rob.keys(), rob)}
 
 robberies = {} # possible robberies
-queue = [(0, end)] # init queue
-L = [None] * (n + 1) # path lengths. using an array here is faster than dict.
-for (bank, cost) in dijkstra(queue, L, graph, banks):
-    if cost < p:
-        printdebug('(possibly) robbing bank', bank)
+for (bank, cost, tobank) in dijkstra(graph, n, end, banks, p, [start]):
+    if tobank == False:
+        continue
+    if tobank != False and tobank < p:
+        printdebug('(possibly) robbing bank', bank, tobank, cost)
         robberies[bank] = cost
     else:
         break
 if robberies:
-    to_rob = []
-    if end in L: # we have encountered end already
-        for bank, cost in robberies.items():
-            to_end = cost - L[end] # from bank to end
-            heappush(to_rob, (cost + to_end, bank))
-    else: # compute path from end to the banks
-        queue2 = [(0, start)]  # init queue
-        L2 = [None] * (n + 1)  # path lengths. using an array here is faster than dict.
-        # for bank in robberies:
-        #     L[bank] = None
-        for (bank, cost) in dijkstra(queue2, L2, graph, robberies.keys()):
-        # for (bank, cost) in dijkstra(queue, L, graph, [start]):
-            heappush(to_rob, (cost + robberies[bank], bank))
-        
-    cost, rob = heappop(to_rob)
-    print(cost)
+    best_to_rob = 1000000
+    for (bank, cost) in dijkstra(graph, n, start, banks, p, robberies.keys()):
+        curr = cost + robberies[bank]
+        if curr < best_to_rob:
+            best_to_rob = curr
+    print(best_to_rob)
 else:
     print(-1)
