@@ -47,15 +47,13 @@ def Dijkstra(graph, n, start): # `n` vertices
     return [0 if x is None else x for x in A]
 
 
-def DijkstraSearch(graph, n, start, targets):  # `n` vertices
+def dijkstra(graph, n, start, targets):  # `n` vertices
     queue = [(0, start)] # init queue
     L = [None] * (n + 1) # path lenghts. using an array here is faster than dict.
     while queue:
         path_len, node = heappop(queue)
-        # printdebug('visiting', node)
         if L[node] is None and node in graph:  # node is unvisited
             if node in targets:
-                # printdebug('reached the end!', path_len)
                 yield (node, path_len)
             L[node] = path_len
             for w, edge_len in graph[node].items():  # neighbors
@@ -64,14 +62,13 @@ def DijkstraSearch(graph, n, start, targets):  # `n` vertices
 
 
 # PRE-COMPUTE ALL PATHS FROM START -> BANKS
-reachability = {bank: cost for (
-    bank, cost) in DijkstraSearch(graph, n, start, banks)}
+reachability = {bank: cost for (bank, cost) in dijkstra(graph, n, start, banks)}
 
-start_paths = Dijkstra(graph, n, start)
-printdebug(start_paths)
+# start_paths = Dijkstra(graph, n, start)
+# printdebug(start_paths)
 
-for (bank, cost) in DijkstraSearch(graph, n, end, banks):
-    if not cost >= p and reachability[bank]:
+for (bank, cost) in dijkstra(graph, n, end, banks):
+    if cost < p and bank in reachability:
         printdebug('robbing bank', bank)
         print(cost + reachability[bank])
         exit()
