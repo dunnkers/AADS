@@ -17,42 +17,6 @@ if "TEST" in os.environ:
     old_stdin = sys.stdin
     sys.stdin = open('./COLOR/6.in')
 
-def findColors(graph):
-    red_colored = 0
-    any_cool_coloring = False
-
-    while len(graph) > 0:
-        # since we only have 2 colors, we only have to invert. we choose True and
-        # False since they're easy to invert.
-        colors = {
-            True: 0,  # a color, e.g. red
-            False: 0  # a color, e.g. blue
-        }
-        coloredNodes = {}
-
-        def colorNode(node, color):
-            colors[color] += 1
-            coloredNodes[node] = color
-            neighbors = graph.pop(node)
-            for neighbor in neighbors:
-                if neighbor in coloredNodes and coloredNodes[neighbor] == color:
-                    return False
-                if neighbor in graph:
-                    colorNode(neighbor, not color)  # invert
-            return True
-
-        first = next(iter(graph.keys()))
-        result = colorNode(first, True)
-        if not result:
-            return False
-        if result:
-            any_cool_coloring = True 
-            red_colored += max(colors.values())  # possibly invert drawing
-    
-    if not any_cool_coloring:
-        return False
-    return red_colored
-
 def color(graph):
     src = next(iter(graph.keys()))
     colored = {src: 1}
@@ -100,10 +64,3 @@ for _ in range(t):
         print(clr)
     else:
         print(-1)
-
-    # lonely_vertices = m - len(graph)
-    # colors = findColors(graph)
-    # if colors:
-    #     print(colors + lonely_vertices)
-    # else:
-    #     print(-1)
