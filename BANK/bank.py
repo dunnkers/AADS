@@ -56,9 +56,15 @@ rob = {bank: cost for (bank, cost) in dijkstra(graph, n, start, banks)}
 # we only compute bank distances for banks we can reach from start
 # hide = {bank: cost for (bank, cost) in dijkstra(graph, n, end, rob.keys(), rob)}
 
+robberies = [] # possible robberies
 for (bank, cost) in dijkstra(graph, n, end, rob.keys(), rob):
-    if cost < p and bank in rob:
+    if cost < p:
         printdebug('robbing bank', bank)
-        print(cost + rob[bank])
-        exit()
-print(-1)
+        # print(cost + rob[bank])
+        robberies.append(cost + rob[bank])
+    else:
+        break
+if robberies:
+    print(min(robberies))
+else:
+    print(-1)
