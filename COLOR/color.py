@@ -15,7 +15,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./COLOR/5.in')
+    sys.stdin = open('./COLOR/6.in')
 
 def findColors(graph):
     red_colored = 0
@@ -53,6 +53,36 @@ def findColors(graph):
         return False
     return red_colored
 
+def color(graph):
+    src = next(iter(graph.keys()))
+    colored = {src: 1}
+    colors = [0, 1]
+    queue = [src]
+    while queue:
+        node = queue.pop()
+        for adj in graph.pop(node):
+            if not adj in colored:
+                colored[adj] = 1 - colored[node]
+                colors[colored[adj]] += 1
+                queue.append(adj)
+            elif colored[adj] == colored[node]:  # not allowed
+                return -1
+    return max(colors)
+
+def bipartite(graph):
+    if not graph:
+        return 0
+    
+    tot = 0
+    while graph:
+        clr = color(graph)
+        if clr == -1:
+            return -1        
+        else:
+            tot += clr
+    
+    return tot
+
 t = int(input())
 for _ in range(t):
     [m, n] = [int(x) for x in input().split()]
@@ -60,16 +90,20 @@ for _ in range(t):
     # use generator to instantiate empty tuples in dict
     for i in range(n):
         a, b = [int(x) for x in input().split()]
-        if a not in graph:
-            graph[a] = []
-        if b not in graph:
-            graph[b] = []
-        graph[a].append(b)
-        graph[b].append(a)
-    lonely_vertices = m - len(graph)
-    
-    colors = findColors(graph)
-    if colors:
-        print(colors + lonely_vertices)
+        graph.setdefault(a, []).append(b)
+        graph.setdefault(b, []).append(a)
+
+    islands = m - len(graph)
+    colored = bipartite(graph)
+    clr = colored + islands
+    if colored != -1 and clr > 0:
+        print(clr)
     else:
         print(-1)
+
+    # lonely_vertices = m - len(graph)
+    # colors = findColors(graph)
+    # if colors:
+    #     print(colors + lonely_vertices)
+    # else:
+    #     print(-1)
