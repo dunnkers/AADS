@@ -26,22 +26,41 @@ for _ in range(n - 1):  # scan weighted edges
     spaceship.setdefault(a, {})
     spaceship.setdefault(b, {})
     spaceship[a][b] = bool(c)
-    spaceship[b][a] = bool(c)
+    # spaceship[b][a] = bool(c)
+
+""" @returns whether last gate should be closed """
+def dfs(graph, k, node, visited, result, savable = False):
+    if node not in visited:
+        total = result['pressure'] + result['potential']
+        if savable and total > k:
+            print('need to close before', node)
+            return True
+        if result['pressure'] > k:          # will spaceship explode?
+            result['gates closed'] = -1
+            return
+        # spaceship not exploded yet, explore further
+        visited.add(node)
+        for neighbor, closable in graph[node].items():
+            print('from', node, 'to', neighbor, ', closable:', closable)
+            if closable:
+                savable = True
+            if savable:
+                result['potential'] += 1
+            else:
+                result['pressure'] += 1
+
+            # return whether we have to close this gate!!!!!!!!!!!!
+            should_close = dfs(graph, k, neighbor, visited, result, savable)
+            if closable and should_close:
+                print('closing', node, '-', neighbor)
 
 
-# DFS
-def travel(spaceship, start): # DFS implementation
-    # stack = [ start ]
-    # visited = set()
-    # while stack:
-    #     block = stack.pop()
-    #     if block not in visited:
-    #         stack.extend(spaceship[block] - visited)
-    #         visited.add(block)
-    #         printdebug('visited', block)
-    pass
-
-
-travel(spaceship, spaceship[1]) # block 1 is de-pressurised
-
-print(-1)
+# block 1 is depressurised
+result = {
+    'pressure': 1,
+    'potential': 0,
+    'gates closed': 0
+}
+dfs(spaceship, k, 1, set(), result)
+printdebug(result)
+print(result['gates closed'])
