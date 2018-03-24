@@ -16,7 +16,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./SPACESHIP/2.in')
+    sys.stdin = open('./SPACESHIP/3.in')
 
 # SCAN INPUT
 [n, k] = [int(x) for x in input().split()]
@@ -29,21 +29,28 @@ for _ in range(n - 1):  # scan weighted edges
     # spaceship[b][a] = bool(c)
 
 """ @returns whether last gate should be closed """
-def dfs(graph, k, node, visited, result, savable = False):
+def dfs(graph, k, node, visited, result, savable = None):
     if node not in visited:
+        # HANDLE PRESSURE
         total = result['pressure'] + result['potential']
         if savable and total > k:
             print('need to close before', node)
-            return True
-        if result['pressure'] > k:          # will spaceship explode?
+            return savable
+        if result['pressure'] > k:          # explosion
+            print('explosion')
             result['gates closed'] = -1
             return
         # spaceship not exploded yet, explore further
         visited.add(node)
         for neighbor, closable in graph[node].items():
+            # HANDLE GATES
             print('from', node, 'to', neighbor, ', closable:', closable)
-            if closable:
-                savable = True
+            if closable and savable:
+                # new gate closing opportunity - ignore because we could close earlier
+                pass
+            if closable and not savable: # new gate opportunity
+                print('gate opportunity at', (node, neighbor))
+                savable = (node, neighbor)
             if savable:
                 result['potential'] += 1
             else:
@@ -52,8 +59,7 @@ def dfs(graph, k, node, visited, result, savable = False):
             # return whether we have to close this gate!!!!!!!!!!!!
             should_close = dfs(graph, k, neighbor, visited, result, savable)
             if closable and should_close:
-                print('closing', node, '-', neighbor)
-
+                print('closing should_close', should_close)
 
 # block 1 is depressurised
 result = {
@@ -61,6 +67,7 @@ result = {
     'potential': 0,
     'gates closed': 0
 }
-dfs(spaceship, k, 1, set(), result)
+answer = dfs(spaceship, k, 1, set(), result)
 printdebug(result)
+print('answer = ', answer)
 print(result['gates closed'])
