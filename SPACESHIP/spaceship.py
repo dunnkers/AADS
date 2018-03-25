@@ -17,7 +17,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./SPACESHIP/2.in')
+    sys.stdin = open('./SPACESHIP/3.in')
 
 # SCAN INPUT
 [n, k] = [int(x) for x in input().split()]
@@ -75,10 +75,7 @@ def travel(tree, root, k):
             printdebug('\tp =', p, 'pp =', pp)
             ppnext = pp
             # first explores all blocks behind gates.
-            if closable:
-                ppnext += 1
-                blocks.append((neighbor, ppnext, (node, neighbor)))
-            elif gate:  # in a gate segment
+            if gate:  # in a gate segment
                 if p + pp + 1 > k:  # we cannot lose this block. close a gate!
                     printdebug('closing ', gate)
                     g += 1
@@ -87,6 +84,9 @@ def travel(tree, root, k):
                     printdebug('in gate segment, no pressure buildup')
                     pp += 1
                     blocks.appendleft((neighbor, ppnext, gate))
+            elif closable:
+                ppnext += 1
+                blocks.append((neighbor, ppnext, (node, neighbor)))
             else:
                 printdebug('\t💠 [', neighbor, '] lost')
                 p += 1
