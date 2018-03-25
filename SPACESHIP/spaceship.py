@@ -6,6 +6,7 @@
 import os
 import sys
 import math
+from collections import deque
 
 # LOGGING
 def printdebug(*s):
@@ -61,13 +62,17 @@ def dfs(graph, k, node, visited, result, savable = None):
             if closable and should_close:
                 print('closing should_close', should_close)
 
-# block 1 is depressurised
-result = {
-    'pressure': 1,
-    'potential': 0,
-    'gates closed': 0
-}
-answer = dfs(spaceship, k, 1, set(), result)
-printdebug(result)
-print('answer = ', answer)
-print(result['gates closed'])
+
+def bfs(root, k):
+    queue = deque(root) # enqueue all children of 1
+    while queue:
+        node = queue.popleft()
+        printdebug(node)
+        queue.extend(spaceship[node])
+    return -1
+
+
+
+# block 1 is depressurised first
+gates = bfs(spaceship[1], k)
+print(gates)
