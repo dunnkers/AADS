@@ -21,57 +21,77 @@ if "TEST" in os.environ:
 
 # SCAN INPUT
 [n, k] = [int(x) for x in input().split()]
-spaceship = {}
+tree = {}
 for _ in range(n - 1):  # scan weighted edges
     [a, b, c] = [int(x) for x in input().split()]
-    spaceship.setdefault(a, {})
-    spaceship.setdefault(b, {})
-    spaceship[a][b] = bool(c)
-    spaceship[b][a] = bool(c)
+    tree.setdefault(a, {})
+    tree.setdefault(b, {})
+    tree[a][b] = bool(c)
+    tree[b][a] = bool(c)
 
-def visit(tree, node, callback, visited=set()):
+def visit(tree, node, callback, args, visited=set()):
     visited.add(node)
     for neighbor, arg in tree[node].items():
         if neighbor in visited:
             continue
-        callback(neighbor, arg)
+        callback(neighbor, arg, args)
 
+class Spaceship(object):
+    def __init__(self, spaceship):
+        self.spaceship = spaceship
+        self.gates = deque()  # heapq!!
+        self.gatemap = {}
+        self.pressure = 1
+        self.gates_closed = 0
 
-# travel through the spaceship, trying to save it
-def travel(tree, root, k, visited = set(), depressurised = set()):
-    blocks = deque([root]) # enqueue all children of 1
-    gates = deque()  # heapq!!
-
-    p = 1  # pressure
-    def pressurised(node, closable):
+    def pressurised(self, node, closable, q):
         if closable:
-            gates.append(node)
+            self.gates.append(node)
         else:
+            q.append(node)
             printdebug(node, closable)
-            p += 1
-            blocks.appendleft(node)
-    g = 0 # closed gates
-    while blocks:
-        node = blocks.popleft()
+            self.pressure += 1
+    
+    def openup(self, root, callback):
+        q = deque([ root ])
+        while q:
+            node = q.pop()
+            visit(self.spaceship, node, callback, q)
 
+    def counter(self, count):
+        count += 1
 
-        visit(tree, node, pressurised)
-        # visited.add(node)
-        # printdebug('NODE', node, '(p =', p, ')')
-        # for neighbor, closable in tree[node].items():
-        #     if neighbor in visited:
-        #         continue
-        #     printdebug('  →', node, '-', neighbor, '☑️' if closable else '')
-        #     if closable:
-        #         # blocks.append((neighbor, pp, (node, neighbor)))
-        #         pass
-        #     elif neighbor not in depressurised:
-        #         printdebug('\t💠 [', neighbor, '] lost')
-        #         depressurised.add(neighbor)
-        #         p += 1
-        #         blocks.appendleft(neighbor)
-    return g
+    def gateaction(self, node, closable, q):
+        pass
+
+    def travel(self, k):
+        # while self.blocks:
+        #     node = self.blocks.popleft()
+        #     visit(self.spaceship, node, self.pressurised)
+        self.openup(1, self.pressurised)
+        while self.gates:
+            gate = self.gates.pop()
+            # self.openup(gate, self.gateaction)
+            printdebug(gate)
+            # self.gateaction(node)
+
+            # visited.add(node)
+            # printdebug('NODE', node, '(p =', p, ')')
+            # for neighbor, closable in tree[node].items():
+            #     if neighbor in visited:
+            #         continue
+            #     printdebug('  →', node, '-', neighbor, '☑️' if closable else '')
+            #     if closable:
+            #         # blocks.append((neighbor, pp, (node, neighbor)))
+            #         pass
+            #     elif neighbor not in depressurised:
+            #         printdebug('\t💠 [', neighbor, '] lost')
+            #         depressurised.add(neighbor)
+            #         p += 1
+            #         blocks.appendleft(neighbor)
+        return self.gates_closed
 
 # block 1 is depressurised first
-gates = travel(spaceship, 1, k)
+spaceship = Spaceship(tree)
+gates = spaceship.travel(k)
 print(gates)
