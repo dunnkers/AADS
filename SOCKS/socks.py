@@ -30,10 +30,8 @@ def permutate(sock, i, pairs, perms = {}): # using python mutable default functi
         shifted = shift(sock, n)
         if shifted in perms:
             match = perms[shifted]
-            printdebug(i, 'matches', match)
-            pairs[i] = 1
-            pairs[match] = 1
-            return
+            pairs[i] = pairs[match] = 1 # pair socks
+            break # return because all permutations already in hashtable.
         else:
             perms[shifted] = i
 
@@ -41,10 +39,8 @@ def permutate(sock, i, pairs, perms = {}): # using python mutable default functi
 n = int(input())
 pairs = {}
 for i in range(n):
-    sock = input()
-    printdebug('permutating', sock)
     pairs[i] = 0
-    permutate(sock, i, pairs)
+    permutate(input(), i, pairs)
 for i, paired in pairs.items():
     print(paired)
     
