@@ -27,37 +27,39 @@ for _ in range(n - 1):  # scan weighted edges
     spaceship.setdefault(a, {})
     spaceship.setdefault(b, {})
     spaceship[a][b] = bool(c)
-    # spaceship[b][a] = bool(c)
+    spaceship[b][a] = bool(c)
 
 # travel through the spaceship, trying to save it
-def travel(tree, root, k):
+def travel(tree, root, k, visited = set()):
     blocks = deque([(root, 0, None)]) # enqueue all children of 1
     p = 1 # pressure
     g = 0 # closed gates
     while blocks:
         node, pp, gate = blocks.popleft() # pp = potential pressure
-        printdebug('NODE', node, '(p =', p, ', pp =', pp, ',', gate, ')')
-        for neighbor, closable in tree[node].items():
-            printdebug('  →', node, '-', neighbor, '☑️' if closable else '')
-            printdebug('\tp =', p, 'pp =', pp)
-            ppnext = pp
-            # first explores all blocks behind gates.
-            if gate:  # in a gate segment
-                if p + pp + 1 > k:  # we cannot lose this block. close a gate!
-                    printdebug('closing ', gate)
-                    g += 1
-                    break
+        if node not in visited:
+            visited.add(node)
+            printdebug('NODE', node, '(p =', p, ', pp =', pp, ',', gate, ')')
+            for neighbor, closable in tree[node].items():
+                printdebug('  →', node, '-', neighbor, '☑️' if closable else '')
+                printdebug('\tp =', p, 'pp =', pp)
+                ppnext = pp
+                # first explores all blocks behind gates.
+                if gate:  # in a gate segment
+                    if p + pp + 1 > k:  # we cannot lose this block. close a gate!
+                        printdebug('closing ', gate)
+                        g += 1
+                        break
+                    else:
+                        printdebug('in gate segment, no pressure buildup')
+                        pp += 1
+                        blocks.appendleft((neighbor, ppnext, gate))
+                elif closable:
+                    ppnext += 1
+                    blocks.append((neighbor, ppnext, (node, neighbor)))
                 else:
-                    printdebug('in gate segment, no pressure buildup')
-                    pp += 1
+                    printdebug('\t💠 [', neighbor, '] lost')
+                    p += 1
                     blocks.appendleft((neighbor, ppnext, gate))
-            elif closable:
-                ppnext += 1
-                blocks.append((neighbor, ppnext, (node, neighbor)))
-            else:
-                printdebug('\t💠 [', neighbor, '] lost')
-                p += 1
-                blocks.appendleft((neighbor, ppnext, gate))
     return g
 
 # notes

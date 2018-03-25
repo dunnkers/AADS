@@ -25,19 +25,26 @@ def shift(text, n):
         s += string.ascii_lowercase[index % len(string.ascii_lowercase)]
     return s
 
-def pair(sock, socks = set()): # using python mutable default function arguments
-    for a in range(26):
-        if shift(sock, a) in socks:
-            return True
+def permutate(sock, i, pairs, perms = {}): # using python mutable default function arguments
+    for n in range(26):
+        shifted = shift(sock, n)
+        if shifted in perms:
+            match = perms[shifted]
+            printdebug(i, 'matches', match)
+            pairs[i] = 1
+            pairs[match] = 1
+            return
         else:
-            socks.add(sock)
-    return False
+            perms[shifted] = i
 
 # SCAN INPUT
 n = int(input())
-for _ in range(n):
+pairs = {}
+for i in range(n):
     sock = input()
-    printdebug('SOCK', sock)
-    paired = pair(sock)
-    print(1 if paired else 0)
-
+    printdebug('permutating', sock)
+    pairs[i] = 0
+    permutate(sock, i, pairs)
+for i, paired in pairs.items():
+    print(paired)
+    
