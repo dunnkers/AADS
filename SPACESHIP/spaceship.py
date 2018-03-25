@@ -17,7 +17,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./SPACESHIP/3.in')
+    sys.stdin = open('./SPACESHIP/2.in')
 
 # SCAN INPUT
 [n, k] = [int(x) for x in input().split()]
@@ -62,17 +62,41 @@ def dfs(graph, k, node, visited, result, savable = None):
             if closable and should_close:
                 print('closing should_close', should_close)
 
+# travel through the spaceship, trying to save it
+def travel(tree, root, k):
+    blocks = deque([(root, 0, None)]) # enqueue all children of 1
+    p = 1 # pressure
+    g = 0 # closed gates
+    while blocks:
+        node, pp, gate = blocks.popleft() # pp = potential pressure
+        printdebug('NODE', node, '(p =', p, ', pp =', pp, ',', gate, ')')
+        for neighbor, closable in tree[node].items():
+            printdebug('  →', node, '-', neighbor, '☑️' if closable else '')
+            printdebug('\tp =', p, 'pp =', pp)
+            ppnext = pp
+            # first explores all blocks behind gates.
+            if closable:
+                ppnext += 1
+                blocks.append((neighbor, ppnext, (node, neighbor)))
+            elif gate:  # in a gate segment
+                if p + pp + 1 > k:  # we cannot lose this block. close a gate!
+                    printdebug('closing ', gate)
+                    g += 1
+                    break
+                else:
+                    printdebug('in gate segment, no pressure buildup')
+                    pp += 1
+                    blocks.appendleft((neighbor, ppnext, gate))
+            else:
+                printdebug('\t💠 [', neighbor, '] lost')
+                p += 1
+                blocks.appendleft((neighbor, ppnext, gate))
+    return g
 
-def bfs(root, k):
-    queue = deque(root) # enqueue all children of 1
-    while queue:
-        node = queue.popleft()
-        printdebug(node)
-        queue.extend(spaceship[node])
-    return -1
-
+# notes
+# we could use node->next like strategy instead of dict. but o(1) lookup so ok.
 
 
 # block 1 is depressurised first
-gates = bfs(spaceship[1], k)
+gates = travel(spaceship, 1, k)
 print(gates)
