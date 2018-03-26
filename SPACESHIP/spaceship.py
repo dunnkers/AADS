@@ -18,7 +18,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./SPACESHIP/myown.in')
+    sys.stdin = open('./SPACESHIP/all_closable.in')
 
 # SCAN INPUT
 [n, k] = [int(x) for x in input().split()]
@@ -59,7 +59,7 @@ class Spaceship(object):
         for _, w, closable in self.yield_edges(q):
             if closable:
                 gates.append(w)
-            elif self.check(k):
+            elif self.pressure + 1 > k: # would explode
                 printdebug('exploding at', w)
                 return -1
             else:
@@ -71,26 +71,28 @@ class Spaceship(object):
         gateque = []
         while gates:
             gate = gates.pop()
-            printdebug('inspecting gate', gate)
             potential = 1
             gatequeue = deque([ gate ])
             for _, w, closable in self.yield_edges(gatequeue):
-                if self.check(k - potential):
-                    printdebug('closing gate', gate)
+                if self.pressure + potential + 1 > k:
+                    printdebug('closing gate', gate, 'on inspection')
                     self.gates_closed += 1
                     break
                 else:
                     potential += 1
             else:
-                printdebug(gate,'gatetot',potential)
+                printdebug('gate', gate, 'has', potential, 'potential pressure')
                 heappush(gateque, (-potential, gate))
         while gateque:
             potential, gate = heappop(gateque)
             potential *= -1
-            if self.check(k - potential):
+            if self.pressure + potential + 1 > k:
                 self.gates_closed += 1
+                
+                printdebug('closing gate', gate)
                 return self.gates_closed
-            else: # leaving gate open
+            else:  # leaving gate open
+                printdebug('leaving open', gate)
                 self.pressure += potential
 
         return self.gates_closed
