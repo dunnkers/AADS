@@ -68,32 +68,46 @@ class Spaceship(object):
                 self.pressure += 1
         printdebug('→ initial pressure',self.pressure)
 
+        full_potential = 0
         gateque = []
         while gates:
             gate = gates.pop()
             potential = 1
+            if self.pressure + potential > k:
+                printdebug('closing gate', gate, 'before inspection')
+                self.gates_closed += 1
+                continue
             gatequeue = deque([ gate ])
             for _, w, closable in self.yield_edges(gatequeue):
-                if self.pressure + potential + 1 > k:
-                    printdebug('closing gate', gate, 'on inspection')
+                potential += 1
+                if self.pressure + potential > k:
+                    printdebug('closing gate', gate, 'on inspection at', w)
                     self.gates_closed += 1
                     break
-                else:
-                    potential += 1
-            else:
+            else: # if break was not triggered in `for`
                 printdebug('gate', gate, 'has', potential, 'potential pressure')
                 heappush(gateque, (-potential, gate))
+                full_potential += potential
+        # maxpress = self.pressure + full_potential
+        # while maxpress > k:
+        #     if not gateque:
+        #         printdebug('this should not happen...')
+        #         return -1
+        #     potential, gate = heappop(gateque)
+        #     potential *= -1
+        #     maxpress -= potential
+        #     self.gates_closed += 1
         while gateque:
             potential, gate = heappop(gateque)
             potential *= -1
-            if self.pressure + potential + 1 > k:
+            if self.pressure + potential > k:
                 self.gates_closed += 1
                 
                 printdebug('closing gate', gate)
-                return self.gates_closed
             else:  # leaving gate open
                 printdebug('leaving open', gate)
                 self.pressure += potential
+            printdebug('→ pressure', self.pressure)
 
         return self.gates_closed
 
