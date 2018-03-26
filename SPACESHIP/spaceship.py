@@ -48,6 +48,7 @@ class Spaceship(object):
     def check(self, potential):
         return self.pressure + potential > self.k
     
+    
     def find_potential(self, gate):
         potential = 1
         q = deque([ gate ])
@@ -86,7 +87,7 @@ class Spaceship(object):
             potential *= -1 # revert back to positive no
             if self.check(full_potential):
                 self.gates_closed += 1
-                full_potential += potential
+                full_potential -= potential
                 printdebug('closing gate', gate)
             else:  # leaving gate open
                 printdebug('leaving open', gate)
