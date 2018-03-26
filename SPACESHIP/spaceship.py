@@ -53,23 +53,19 @@ class Spaceship(object):
         q = deque([ gate ])
         for w, _ in self.yield_edges(q):
             potential += 1
-            printdebug('🔶', w)
             if self.check(potential):
                 printdebug('closing gate', gate, 'on inspection at', w)
                 self.gates_closed += 1
                 return None
             q.append(w)
-        else: # if break was not triggered in `for`
-            printdebug('gate', gate, 'has', potential, 'potential pressure')
-            return potential
+        printdebug('gate', gate, 'has', potential, 'potential pressure')
+        return potential
 
     def travel(self):
-        # gates = deque()
-        q = deque([ 1 ])
-
         # EXPLORE ALL NODES BEFORE GATES & GATE POTENTIAL
         full_potential = 0
         gateque = []
+        q = deque([1])
         for w, closable in self.yield_edges(q):
             if closable:
                 potential = self.find_potential(w)
@@ -81,7 +77,6 @@ class Spaceship(object):
                 return -1
             else:
                 q.append(w)
-                printdebug(w, closable)
                 self.pressure += 1
         printdebug('→ initial pressure', self.pressure)
 
@@ -91,7 +86,7 @@ class Spaceship(object):
             potential *= -1 # revert back to positive no
             if self.check(full_potential):
                 self.gates_closed += 1
-                full_potential -= potential # already negative
+                full_potential += potential
                 printdebug('closing gate', gate)
             else:  # leaving gate open
                 printdebug('leaving open', gate)
