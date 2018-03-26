@@ -47,15 +47,35 @@ class Spaceship(object):
 
     def check(self, potential):
         return self.pressure + potential > self.k
+    
+    def find_potential(self, gate):
+        potential = 1
+        q = deque([ gate ])
+        for w, _ in self.yield_edges(q):
+            potential += 1
+            printdebug('🔶', w)
+            if self.check(potential):
+                printdebug('closing gate', gate, 'on inspection at', w)
+                self.gates_closed += 1
+                return None
+            q.append(w)
+        else: # if break was not triggered in `for`
+            printdebug('gate', gate, 'has', potential, 'potential pressure')
+            return potential
 
     def travel(self):
-        gates = deque()
+        # gates = deque()
         q = deque([ 1 ])
 
-        # EXPLORE ALL NODES BEFORE GATES
+        # EXPLORE ALL NODES BEFORE GATES & GATE POTENTIAL
+        full_potential = 0
+        gateque = []
         for w, closable in self.yield_edges(q):
             if closable:
-                gates.append(w)
+                potential = self.find_potential(w)
+                if potential:
+                    full_potential += potential
+                    heappush(gateque, (potential * -1, w))  # *-1 for max-heap
             elif self.check(1):  # would explode
                 printdebug('exploding at', w)
                 return -1
@@ -65,34 +85,13 @@ class Spaceship(object):
                 self.pressure += 1
         printdebug('→ initial pressure', self.pressure)
 
-        # EXPLORE WHICH GATES NEED TO BE CLOSED
-        full_potential = 0
-        gateque = []
-        while gates:
-            gate = gates.pop()
-            printdebug('GATE', gate)
-            potential = 1
-            gatequeue = deque([ gate ])
-            for w, closable in self.yield_edges(gatequeue):
-                potential += 1
-                printdebug('🔶', w)
-                if self.check(potential):
-                    printdebug('closing gate', gate, 'on inspection at', w)
-                    self.gates_closed += 1
-                    break
-                gatequeue.append(w)
-            else: # if break was not triggered in `for`
-                printdebug('gate', gate, 'has', potential, 'potential pressure')
-                heappush(gateque, (-potential, gate)) # *-1 for max-heap
-                full_potential += potential
-
         # EXPLORE HOW MANY GATES WE MINIMALLY HAVE TO CLOSE
         while gateque:
             potential, gate = heappop(gateque)
             potential *= -1 # revert back to positive no
             if self.check(full_potential):
                 self.gates_closed += 1
-                full_potential -= potential
+                full_potential -= potential # already negative
                 printdebug('closing gate', gate)
             else:  # leaving gate open
                 printdebug('leaving open', gate)
