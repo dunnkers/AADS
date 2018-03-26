@@ -7,6 +7,7 @@ import os
 import sys
 import math
 from collections import deque
+from heapq import heappush, heappop
 
 # LOGGING
 def printdebug(*s):
@@ -17,7 +18,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./SPACESHIP/3.in')
+    sys.stdin = open('./SPACESHIP/myown.in')
 
 # SCAN INPUT
 [n, k] = [int(x) for x in input().split()]
@@ -29,66 +30,69 @@ for _ in range(n - 1):  # scan weighted edges
     tree[a][b] = bool(c)
     tree[b][a] = bool(c)
 
-def visit(tree, node, callback, args, visited=set()):
+def visit(tree, node, visited=set()):
     visited.add(node)
     for neighbor, arg in tree[node].items():
         if neighbor in visited:
             continue
-        callback(neighbor, arg, args)
+        yield neighbor, arg
 
 class Spaceship(object):
     def __init__(self, spaceship):
         self.spaceship = spaceship
-        self.gates = deque()  # heapq!!
-        self.gatemap = {}
         self.pressure = 1
         self.gates_closed = 0
 
-    def pressurised(self, node, closable, q):
-        if closable:
-            self.gates.append(node)
-        else:
-            q.append(node)
-            printdebug(node, closable)
-            self.pressure += 1
-    
-    def openup(self, root, callback):
-        q = deque([ root ])
+    def yield_edges(self, q):
         while q:
-            node = q.pop()
-            visit(self.spaceship, node, callback, q)
+            v = q.pop()
+            for w, closable in visit(self.spaceship, v):
+                yield v, w, closable
 
-    def counter(self, count):
-        count += 1
-
-    def gateaction(self, node, closable, q):
-        pass
+    def check(self, k):
+        return self.pressure + 1 > k
 
     def travel(self, k):
-        # while self.blocks:
-        #     node = self.blocks.popleft()
-        #     visit(self.spaceship, node, self.pressurised)
-        self.openup(1, self.pressurised)
-        while self.gates:
-            gate = self.gates.pop()
-            # self.openup(gate, self.gateaction)
-            printdebug(gate)
-            # self.gateaction(node)
+        gates = deque()
+        q = deque([ 1 ])
 
-            # visited.add(node)
-            # printdebug('NODE', node, '(p =', p, ')')
-            # for neighbor, closable in tree[node].items():
-            #     if neighbor in visited:
-            #         continue
-            #     printdebug('  →', node, '-', neighbor, '☑️' if closable else '')
-            #     if closable:
-            #         # blocks.append((neighbor, pp, (node, neighbor)))
-            #         pass
-            #     elif neighbor not in depressurised:
-            #         printdebug('\t💠 [', neighbor, '] lost')
-            #         depressurised.add(neighbor)
-            #         p += 1
-            #         blocks.appendleft(neighbor)
+        for _, w, closable in self.yield_edges(q):
+            if closable:
+                gates.append(w)
+            elif self.check(k):
+                printdebug('exploding at', w)
+                return -1
+            else:
+                q.append(w)
+                printdebug(w, closable)
+                self.pressure += 1
+        printdebug('→ initial pressure',self.pressure)
+
+        gateque = []
+        while gates:
+            gate = gates.pop()
+            printdebug('inspecting gate', gate)
+            potential = 1
+            gatequeue = deque([ gate ])
+            for _, w, closable in self.yield_edges(gatequeue):
+                if self.check(k - potential):
+                    printdebug('closing gate', gate)
+                    self.gates_closed += 1
+                    break
+                else:
+                    potential += 1
+            else:
+                printdebug(gate,'gatetot',potential)
+                heappush(gateque, (-potential, gate))
+        while gateque:
+            potential, gate = heappop(gateque)
+            potential *= -1
+            if self.check(k - potential):
+                self.gates_closed += 1
+                return self.gates_closed
+            else: # leaving gate open
+                self.pressure += potential
+
         return self.gates_closed
 
 # block 1 is depressurised first
