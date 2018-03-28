@@ -22,6 +22,9 @@ if "TEST" in os.environ:
 n = int(input())
 boxes = [int(x) for x in input().split()]
 bins = [] # sort from big to small # descending
+# uses a bisection algorithm to determine quickly where to insert a box in the
+# sorted bins list. if a suitable bin is found, replace the bin by the box. 
+# else, create a new bin.
 for box in boxes:
     idx = bisect_left(bins, box)
     if idx == len(bins): # its bigger than last box
