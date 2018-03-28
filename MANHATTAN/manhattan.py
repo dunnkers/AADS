@@ -50,14 +50,9 @@ def construct(root): # recursively construct a building from 1 stone
     building = set([root])
     q = deque([root])
     while q:
-        stone = q.pop()
-        neighs = neighbors(stone)
-        for neigh in neighs:
-            if neigh not in building and isStone(neigh):
-                building.add(neigh)
-                q.append(neigh)
-                # if neigh in stones:
-                #     stones.remove(neigh)
+        neighs = filter(lambda neigh: neigh not in building and isStone(neigh), 
+            neighbors(q.pop()))
+        building = building.union(set(list(neighs)))
     return building
 
 buildings = []
@@ -67,7 +62,7 @@ while stones:
 
     # construct a new building
     building = construct(stone)
-    printdebug('building', building)
+    printdebug('BUILDING', building)
     stones -= building # remove this building from building stones
     buildings.append(building)
 
