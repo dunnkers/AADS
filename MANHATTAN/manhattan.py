@@ -7,6 +7,7 @@ import os
 import sys
 import math
 from collections import deque
+from heapq import heappush, heappop
 
 # LOGGING
 def printdebug(*s):
@@ -23,6 +24,7 @@ if "TEST" in os.environ:
 matrix = []
 stones = set()          # stones, e.g. building pieces
 spots = set()           # empty spots e.g. potential ice-cream places
+# -> CONSTRUCT MATRIX AND STONES & SPOTS SETS
 for i in range(n):
     row = [int(x) for x in input().split()]
     matrix.append(row)
@@ -58,6 +60,7 @@ def construct(root): # recursively construct a building from 1 stone
                 q.append(neigh)
     return building
 
+# COMPUTE BUILDINGS
 buildings = []
 while stones:
     stone = stones.pop()
@@ -66,19 +69,30 @@ while stones:
     # construct a new building
     building = construct(stone)
     printdebug('BUILDING', building)
-    stones -= building # remove this building from building stones
+    stones -= building          # remove this building from building stones
     buildings.append(building)
 
 def distance(spot, stone):
-    return -1
+    return abs(spot[0] - stone[0]) + abs(spot[1] - stone[1])
 
 def distanceTo(spot, building):
     return min(map(lambda stone: distance(spot, stone), building))
 
+# COMPUTE DISTANCES
+distances = {}
 while spots:
     spot = spots.pop()
     printdebug('SPOT', spot)
     total = sum(map(lambda building: distanceTo(spot, building), buildings))
-    printdebug('Total dist to all buildings:', total)
-    break
-print(-1)
+
+    distances.setdefault(total, [])
+    distances[total].append(spot)
+
+    printdebug('TOT DIST:', total)
+
+# COMPUTE SMALLEST DISTANCE
+least = min(distances.keys())
+dists = distances[least]
+# sorts tuples by (x, y) first by x than y. which is row then column.
+x, y = sorted(dists)[0]
+print(x + 1, y + 1) # convert to 1-indexed sytem
