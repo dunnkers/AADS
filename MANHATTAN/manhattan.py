@@ -69,8 +69,16 @@ while stones:
     stones -= building # remove this building from building stones
     buildings.append(building)
 
+def distance(spot, stone):
+    return -1
+
+def distanceTo(spot, building):
+    return min(map(lambda stone: distance(spot, stone), building))
+
 while spots:
     spot = spots.pop()
     printdebug('SPOT', spot)
+    total = sum(map(lambda building: distanceTo(spot, building), buildings))
+    printdebug('Total dist to all buildings:', total)
     break
 print(-1)
