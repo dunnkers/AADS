@@ -21,14 +21,18 @@ if "TEST" in os.environ:
 # SCAN INPUT
 n = int(input())
 boxes = [int(x) for x in input().split()]
-bins = [] # sort from big to small # descending
-# uses a bisection algorithm to determine quickly where to insert a box in the
-# sorted bins list. if a suitable bin is found, replace the bin by the box. 
-# else, create a new bin.
+bins = []
+
+"""
+Uses a bisection algorithm to determine quickly where to insert a box in the
+sorted bins list. If a suitable bin is found, replace the bin by the box. Else, 
+create a new bin. Because we do left-bisections, we can correctly replace the
+old bin size by the new box size.
+"""
 for box in boxes:
-    idx = bisect_left(bins, box)
-    if idx == len(bins): # its bigger than last box
-        bins.insert(idx, box) # same as append?
+    idx = bisect_left(bins, box)    # look for a bin or place to insert this box
+    if idx == len(bins):            # this box is larger than any bin we have
+        bins.insert(idx, box)       # create a new bin (same as append)
     else:
-        bins[idx] = box # is sorting preserved now?!
+        bins[idx] = box             # replace bin by this new, smaller box
 print(len(bins))
