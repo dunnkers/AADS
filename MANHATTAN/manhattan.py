@@ -17,7 +17,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./MANHATTAN/1.in')
+    sys.stdin = open('./MANHATTAN/2.in')
 
 # SCAN INPUT
 [n, m] = [int(x) for x in input().split()]  # rows, columns
