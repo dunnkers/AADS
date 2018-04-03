@@ -46,7 +46,6 @@ def constructFrom(root, func):  # recursively construct a building from 1 stone
 def distance(spot, stone):
     return abs(spot[0] - stone[0]) + abs(spot[1] - stone[1])
 
-
 def distanceTo(spot, building):
     return min(map(lambda stone: distance(spot, stone), building))
 
@@ -82,7 +81,7 @@ for i in range(n):
             corners[tile] = findWidth(gen, i, spots)
         else:                       # its a spot
             spots.add(tile)
-printdebug('matrix construction:', time.time() - s, 'sec')
+printdebug('matrix  construction:', time.time() - s, 'sec')
 
 # COMPUTE BUILDINGS
 s = time.time()
@@ -129,5 +128,5 @@ least = min(distances.keys())
 dists = distances[least]
 # sorts tuples by (x, y) first by x than y. which is row then column.
 x, y = sorted(dists)[0]
-printdebug('smallest distance computation:', time.time() - s, 'sec')
+printdebug('smallest    distance:', time.time() - s, 'sec')
 print(x + 1, y + 1) # convert to 1-indexed sytem
