@@ -111,11 +111,18 @@ printdebug('building contruction:', time.time() - s, 'sec')
 # COMPUTE DISTANCES
 s = time.time()
 distances = {}
+bestdist = 1000000
 while spots:
     spot = spots.pop()
     # printdebug('SPOT', spot)
-    total = sum(map(lambda building: distanceTo(spot, building), buildings))
+    total = 0
+    for building in buildings:
+        total += distanceTo(spot, building)
+        if total > bestdist:
+            break
 
+    if total < bestdist:
+        bestdist = total
     distances.setdefault(total, [])
     distances[total].append(spot)
 
