@@ -5,7 +5,6 @@
 
 import os
 import sys
-import math
 from collections import deque
 from heapq import heappush, heappop
 
@@ -20,7 +19,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./MANHATTAN/1_themis.in')
+    sys.stdin = open('./MANHATTAN/2.in')
 
 def peek(i, j):
     return None if i < 0 or i > n - 1 or j < 0 or j > m - 1 else (i, j)
@@ -47,7 +46,8 @@ def distance(spot, stone):
     return abs(spot[0] - stone[0]) + abs(spot[1] - stone[1])
 
 def distanceTo(spot, building):
-    return min(map(lambda stone: distance(spot, stone), building))
+    spotrect = Building(spot[1], spot[0], 1, 1)
+    return building.distance(spotrect)
 
 def findWidth(gen, i, spots):
     width = 0
@@ -58,6 +58,31 @@ def findWidth(gen, i, spots):
         else:
             width += 1
     return width
+
+class Building:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+    def distance(self, spot):
+        xdiff = abs(self.x - spot.x)
+        wsum = (self.width + spot.width)
+        if xdiff <= wsum:
+            dx = 0
+        else:
+            dx = xdiff - wsum
+        ydiff = abs(self.y - spot.y)
+        hsum = (self.height + spot.height)
+        if ydiff <= hsum:
+            dy = 0
+        else:
+            dy = ydiff - hsum
+
+        # dx = abs(self.x - spot.x) - (self.width + spot.width)
+        # dy = abs(self.y - spot.y) - (self.height + spot.height)
+        return dx + dy
 
 # SCAN INPUT
 s = time.time()
@@ -95,16 +120,17 @@ while stones:
     building = constructFrom(stone, verticalNeighbors) # left-vertical segment
     stones -= building          # remove this building from building stones
     width = corners[stone]
-    top, _ = min(building)     # top tile
+    top, x = min(building)     # top tile
     bottom, _ = max(building)  # bottom tile
-    # right-vertical segment
-    building |= set([(i, j + width) for i, j in building])
-    # top segment
-    building |= set([(top, col) for col in range(j + 1, j + width)])
-    # bottom segment
-    building |= set([(bottom, col) for col in range(j + 1, j + width)])
+    height = bottom - top + 1
+    # # right-vertical segment
+    # building |= set([(i, j + width) for i, j in building])
+    # # top segment
+    # building |= set([(top, col) for col in range(j + 1, j + width)])
+    # # bottom segment
+    # building |= set([(bottom, col) for col in range(j + 1, j + width)])
 
-    buildings.append(building)
+    buildings.append(Building(x, top, width, height))
     # printdebug('BUILDING', building)
 printdebug('building contruction:', time.time() - s, 'sec')
 
