@@ -20,28 +20,24 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./MANHATTAN/1.in')
+    sys.stdin = open('./MANHATTAN/1_themis.in')
 
 def peek(i, j):
     return None if i < 0 or i > n - 1 or j < 0 or j > m - 1 else (i, j)
 
-def neighbors(tile):
+def verticalNeighbors(tile):
     i, j = tile
-    return filter(None, [
-                            peek(i - 1, j),
-        peek(i,     j - 1),                 peek(i,     j + 1),
-                            peek(i + 1, j),
-    ])
+    return filter(None, [peek(i - 1, j), peek(i + 1, j), ])
 
 def isStone(tile):
     i, j = tile
     return True if matrix[i][j] == 1 else False
 
-def construct(root): # recursively construct a building from 1 stone
+def constructFrom(root, func):  # recursively construct a building from 1 stone
     building = set([root])
     q = deque([root])
     while q:
-        for neigh in neighbors(q.pop()):
+        for neigh in func(q.pop()):
             if neigh not in building and isStone(neigh):
                 building.add(neigh)
                 q.append(neigh)
@@ -54,14 +50,14 @@ def distance(spot, stone):
 def distanceTo(spot, building):
     return min(map(lambda stone: distance(spot, stone), building))
 
-def findWidth(gen, i, building):
-    width = 1
+def findWidth(gen, i, spots):
+    width = 0
     for j, cell in gen:  # tuple (j, cell)
         if cell == 0:
+            spots.add((i, j))
             break
         else:
             width += 1
-            building.append((i, j))
     return width
 
 # SCAN INPUT
@@ -81,41 +77,36 @@ for i in range(n):
     gen = enumerate(row)
     for j, cell in gen:  # store stones, e.g. building pieces
         tile = (i, j)
-        # printdebug(tile)
-        # for key, value in construction.items():
-        #     pass
         if cell == 1:               # its a stone
             stones.add(tile)
-            
-            prev = (i - 1, j)
-            if prev in corners:  # already constructing
-                corner = corners[prev]
-
-                w, h = construction[corner]
-                construction[corner] = (w, h + 1)
-                corners[tile] = corners[prev]
-            else:
-                building = [tile]
-                width = findWidth(gen, i, building)
-                construction[tile] = (width, 1)
-                corners[tile] = tile
-                printdebug(tile, 'width:', width)
+            corners[tile] = findWidth(gen, i, spots)
         else:                       # its a spot
             spots.add(tile)
 printdebug('matrix construction:', time.time() - s, 'sec')
-exit()
+
 # COMPUTE BUILDINGS
 s = time.time()
 buildings = []
 while stones:
     stone = stones.pop()
+    _, j = stone
     # printdebug('STONE ', stone)
 
     # construct a new building
-    building = construct(stone)
-    # printdebug('BUILDING', building)
+    building = constructFrom(stone, verticalNeighbors) # left-vertical segment
     stones -= building          # remove this building from building stones
+    width = corners[stone]
+    top, _ = min(building)     # top tile
+    bottom, _ = max(building)  # bottom tile
+    # right-vertical segment
+    building |= set([(i, j + width) for i, j in building])
+    # top segment
+    building |= set([(top, col) for col in range(j + 1, j + width)])
+    # bottom segment
+    building |= set([(bottom, col) for col in range(j + 1, j + width)])
+
     buildings.append(building)
+    # printdebug('BUILDING', building)
 printdebug('building contruction:', time.time() - s, 'sec')
 
 # COMPUTE DISTANCES
