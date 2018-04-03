@@ -20,7 +20,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./MANHATTAN/1_themis.in')
+    sys.stdin = open('./MANHATTAN/1.in')
 
 def peek(i, j):
     return None if i < 0 or i > n - 1 or j < 0 or j > m - 1 else (i, j)
@@ -28,9 +28,9 @@ def peek(i, j):
 def neighbors(tile):
     i, j = tile
     return filter(None, [
-        peek(i - 1, j - 1), peek(i - 1, j), peek(i - 1, j + 1),
+                            peek(i - 1, j),
         peek(i,     j - 1),                 peek(i,     j + 1),
-        peek(i + 1, j - 1), peek(i + 1, j), peek(i + 1, j + 1)
+                            peek(i + 1, j),
     ])
 
 def isStone(tile):
@@ -54,24 +54,56 @@ def distance(spot, stone):
 def distanceTo(spot, building):
     return min(map(lambda stone: distance(spot, stone), building))
 
+def findWidth(gen, i, building):
+    width = 1
+    for j, cell in gen:  # tuple (j, cell)
+        if cell == 0:
+            break
+        else:
+            width += 1
+            building.append((i, j))
+    return width
+
 # SCAN INPUT
 s = time.time()
 [n, m] = [int(x) for x in input().split()]  # rows, columns
 matrix = []
 stones = set()          # stones, e.g. building pieces
 spots = set()           # empty spots e.g. potential ice-cream places
+construction = {}
+corners = {}
+buildings = []
 # -> CONSTRUCT MATRIX AND STONES & SPOTS SETS
 for i in range(n):
     row = [int(x) for x in input().split()]
     matrix.append(row)
-
-    for j, cell in enumerate(row):  # store stones, e.g. building pieces
+    # maybe use a zip here..
+    gen = enumerate(row)
+    for j, cell in gen:  # store stones, e.g. building pieces
+        tile = (i, j)
+        # printdebug(tile)
+        # for key, value in construction.items():
+        #     pass
         if cell == 1:               # its a stone
-            stones.add((i, j))
-        else:                       # its a spot
-            spots.add((i, j))
-printdebug('matrix construction:', time.time() - s, 'sec')
+            stones.add(tile)
+            
+            prev = (i - 1, j)
+            if prev in corners:  # already constructing
+                corner = corners[prev]
 
+                w, h = construction[corner]
+                construction[corner] = (w, h + 1)
+                corners[tile] = corners[prev]
+            else:
+                building = [tile]
+                width = findWidth(gen, i, building)
+                construction[tile] = (width, 1)
+                corners[tile] = tile
+                printdebug(tile, 'width:', width)
+        else:                       # its a spot
+            spots.add(tile)
+printdebug('matrix construction:', time.time() - s, 'sec')
+exit()
 # COMPUTE BUILDINGS
 s = time.time()
 buildings = []
