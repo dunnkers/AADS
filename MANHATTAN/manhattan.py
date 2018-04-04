@@ -42,13 +42,6 @@ def constructFrom(root, func):  # recursively construct a building from 1 stone
                 q.append(neigh)
     return building
 
-def distance(spot, stone):
-    return abs(spot[0] - stone[0]) + abs(spot[1] - stone[1])
-
-def distanceTo(spot, building):
-    spotrect = Building(spot[1], spot[0], 1, 1)
-    return building.distance(spotrect)
-
 def findWidth(gen, i, spots):
     width = 1
     for j, cell in gen:  # tuple (j, cell)
@@ -66,24 +59,6 @@ class Building:
         self.width = width
         self.height = height
 
-    def distance(self, spot):
-        xdiff = abs(self.x - spot.x)
-        wsum = (self.width + spot.width)
-        if xdiff <= wsum:
-            dx = 0
-        else:
-            dx = xdiff - wsum
-        ydiff = abs(self.y - spot.y)
-        hsum = (self.height + spot.height)
-        if ydiff <= hsum:
-            dy = 0
-        else:
-            dy = ydiff - hsum
-
-        # dx = abs(self.x - spot.x) - (self.width + spot.width)
-        # dy = abs(self.y - spot.y) - (self.height + spot.height)
-        return dx + dy
-    
     def xDistance(self, spotx):
         east = (self.x + self.width - 1) # east point # width is at least 1
         if spotx >= self.x and spotx <= east: # between
@@ -116,7 +91,8 @@ corners = {}
 buildings = []
 # -> CONSTRUCT MATRIX AND STONES & SPOTS SETS
 for i in range(n):
-    row = [int(x) for x in input().split()]
+    # row = [int(x) for x in input().split()]
+    row = list(map(int, input().split()))
     matrix.append(row)
     # maybe use a zip here..
     gen = enumerate(row)
@@ -211,6 +187,8 @@ for dist in dists:
     _, col = dist
     potentials |= set((i, col) for i in range(n)) & spots
     pass
+printdebug('y potential set construction:', time.time() - s, 'sec')
+s = time.time()
 distancesWithY = computeBestDistances(potentials, buildings, computeTotalYDist)
 printdebug('y distance computation:', time.time() - s, 'sec')
 
