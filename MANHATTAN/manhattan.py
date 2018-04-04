@@ -151,6 +151,7 @@ def computeBuildings(stones):
     return buildings
 s = time.time()
 buildings = computeBuildings(stones)
+skyscrapers = filter(lambda b: b.height == n, buildings)
 printdebug('building contruction:', time.time() - s, 'sec')
 
 # COMPUTE DISTANCES
@@ -190,7 +191,10 @@ def computeBestDistances(spots, buildings, computeTotalDist):
     return distances
 
 s = time.time()
-distances = computeBestDistances(spots, buildings, computeTotalXDist)
+# remember to exclude skyscrapers
+skys = map(lambda skyscraper: (0, skyscraper.x), skyscrapers)
+arow = set((0, i) for i in range(m)) - set(skys)
+distances = computeBestDistances(arow, buildings, computeTotalXDist)
 printdebug('x distance computation:', time.time() - s, 'sec')
 
 # GET SMALLEST X DIST
@@ -201,7 +205,13 @@ printdebug('smallest   x distance:', time.time() - s, 'sec')
 
 # COMPUTE Y DIST
 s = time.time()
-distancesWithY = computeBestDistances(dists, buildings, computeTotalYDist)
+# all matrix with as x position one in `dists`
+potentials = set()
+for dist in dists:
+    _, col = dist
+    potentials |= set((i, col) for i in range(n)) & spots
+    pass
+distancesWithY = computeBestDistances(potentials, buildings, computeTotalYDist)
 printdebug('y distance computation:', time.time() - s, 'sec')
 
 
