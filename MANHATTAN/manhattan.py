@@ -19,7 +19,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./MANHATTAN/1.in')
+    sys.stdin = open('./MANHATTAN/1_themis.in')
 
 def peek(i, j):
     return None if i < 0 or i > n - 1 or j < 0 or j > m - 1 else (i, j)
@@ -83,6 +83,27 @@ class Building:
         # dx = abs(self.x - spot.x) - (self.width + spot.width)
         # dy = abs(self.y - spot.y) - (self.height + spot.height)
         return dx + dy
+    
+    def xDistance(self, spotx):
+        east = (self.x + self.width - 1) # east point # width is at least 1
+        if spotx >= self.x and spotx <= east: # between
+            return 0
+        elif spotx > east: # this stuff can also be done with a abs()?
+            return spotx - east
+        else: # spotx < self.x
+            return self.x - spotx
+
+    def yDistance(self, spoty):
+        south = (self.y + self.height - 1) # height is at least 1
+        if spoty >= self.y and spoty <= south: # between
+            return 0
+        elif spoty > south:
+            return spoty - south
+        else: # spoty < self.y
+            return self.y - spoty
+    
+    def __str__(self):
+        return "[Building (x = %d, y = %d) %dx%d]" % (self.x, self.y, self.width, self.height)
 
 # SCAN INPUT
 s = time.time()
@@ -113,24 +134,19 @@ s = time.time()
 buildings = []
 while stones:
     stone = stones.pop()
-    _, j = stone
+    # _, j = stone
     # printdebug('STONE ', stone)
 
     # construct a new building
     building = constructFrom(stone, verticalNeighbors) # left-vertical segment
     stones -= building          # remove this building from building stones
-    width = corners[stone]
-    top, x = min(building)     # top tile
+    width = corners[stone]      # arbitrary stone; its a corner
+    y, x = min(building)     # top tile
     bottom, _ = max(building)  # bottom tile
-    height = bottom - top + 1
-    # # right-vertical segment
-    # building |= set([(i, j + width) for i, j in building])
-    # # top segment
-    # building |= set([(top, col) for col in range(j + 1, j + width)])
-    # # bottom segment
-    # building |= set([(bottom, col) for col in range(j + 1, j + width)])
+    height = bottom - y + 1
 
-    buildings.append(Building(x, top, width, height))
+    buildings.append(Building(x, y, width, height))
+    # printdebug('BUILDING x, y = (', x, ',', y, '), width=', width, 'height=', height)
     # printdebug('BUILDING', building)
 printdebug('building contruction:', time.time() - s, 'sec')
 
@@ -140,19 +156,30 @@ distances = {}
 bestdist = 1000000
 while spots:
     spot = spots.pop()
+    spoty, spotx = spot
     # printdebug('SPOT', spot)
     total = 0
+    xsum = 0
+    ysum = 0
     for building in buildings:
-        total += distanceTo(spot, building)
-        if total > bestdist:
-            break
-
+        xdist = building.xDistance(spotx)
+        xsum += xdist
+        ydist = building.yDistance(spoty)
+        ysum += ydist
+        # if spot == (1,2) or spot == (2,2):
+            # printdebug('\t→', building)
+            # printdebug('\txdist =', xdist, 'ydist =', ydist)
+        # total += distanceTo(spot, building)
+        # if total > bestdist: # break early when we already exceeded dist
+        #     break
+    total = xsum + ysum
     if total < bestdist:
         bestdist = total
+    # PERF use a >heapq< or bisect
     distances.setdefault(total, [])
     distances[total].append(spot)
 
-    # printdebug('TOT DIST:', total)
+    # printdebug('\tTOT DIST:', total)
 printdebug('distance computation:', time.time() - s, 'sec')
 
 # COMPUTE SMALLEST DISTANCE
@@ -163,39 +190,3 @@ dists = distances[least]
 x, y = sorted(dists)[0]
 printdebug('smallest    distance:', time.time() - s, 'sec')
 print(x + 1, y + 1) # convert to 1-indexed sytem
-
-
-
-# Python3 code to find sum of Manhattan
-# distances between all the pairs of
-# given points
-
-# Return the sum of distance of one axis.
-
-
-def distancesum(arr, n):
-
-    # sorting the array.
-    arr.sort()
-
-    # for each point, finding
-    # the distance.
-    res = 0
-    sum = 0
-    for i in range(n):
-        res += (arr[i] * i - sum)
-        sum += arr[i]
-
-    return res
-
-
-def totaldistancesum(x, y, n):
-    return distancesum(x, n) + distancesum(y, n)
-
-
-# Driven Code
-x = [-1, 1, 3, 2]
-y = [5, 6, 5, 3]
-n = len(x)
-print(totaldistancesum(x, y, n))
-
