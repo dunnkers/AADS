@@ -130,64 +130,88 @@ for i in range(n):
 printdebug('matrix  construction:', time.time() - s, 'sec')
 
 # COMPUTE BUILDINGS
+def computeBuildings(stones):
+    buildings = []
+    while stones:
+        stone = stones.pop()
+        # _, j = stone
+        # printdebug('STONE ', stone)
+
+        # construct a new building
+        building = constructFrom(stone, verticalNeighbors) # left-vertical segment
+        stones -= building          # remove this building from building stones
+        width = corners[stone]      # arbitrary stone; its a corner
+        y, x = min(building)     # top tile
+        bottom, _ = max(building)  # bottom tile
+        height = bottom - y + 1
+
+        buildings.append(Building(x, y, width, height))
+        # printdebug('BUILDING x, y = (', x, ',', y, '), width=', width, 'height=', height)
+        # printdebug('BUILDING', building)
+    return buildings
 s = time.time()
-buildings = []
-while stones:
-    stone = stones.pop()
-    # _, j = stone
-    # printdebug('STONE ', stone)
-
-    # construct a new building
-    building = constructFrom(stone, verticalNeighbors) # left-vertical segment
-    stones -= building          # remove this building from building stones
-    width = corners[stone]      # arbitrary stone; its a corner
-    y, x = min(building)     # top tile
-    bottom, _ = max(building)  # bottom tile
-    height = bottom - y + 1
-
-    buildings.append(Building(x, y, width, height))
-    # printdebug('BUILDING x, y = (', x, ',', y, '), width=', width, 'height=', height)
-    # printdebug('BUILDING', building)
+buildings = computeBuildings(stones)
 printdebug('building contruction:', time.time() - s, 'sec')
 
 # COMPUTE DISTANCES
-s = time.time()
-distances = {}
-bestdist = 1000000
-while spots:
-    spot = spots.pop()
-    spoty, spotx = spot
-    # printdebug('SPOT', spot)
+def computeTotalXDist(spot, buildings, bestdist):
+    _, spotx = spot
     total = 0
-    xsum = 0
-    ysum = 0
     for building in buildings:
         xdist = building.xDistance(spotx)
-        xsum += xdist
-        ydist = building.yDistance(spoty)
-        ysum += ydist
-        total += ydist + xdist
-        # if spot == (1,2) or spot == (2,2):
-            # printdebug('\t→', building)
-            # printdebug('\txdist =', xdist, 'ydist =', ydist)
-        # total += distanceTo(spot, building)
-        if total > bestdist: # break early when we already exceeded dist
+        total += xdist
+        if total > bestdist:  # break early when we already exceeded dist
             break
-    # total = xsum + ysum
-    if total < bestdist:
-        bestdist = total
-    # PERF use a >heapq< or bisect
-    distances.setdefault(total, [])
-    distances[total].append(spot)
+    return total
 
-    # printdebug('\tTOT DIST:', total)
-printdebug('distance computation:', time.time() - s, 'sec')
+def computeTotalYDist(spot, buildings, bestdist):
+    spoty, _ = spot
+    total = 0
+    for building in buildings:
+        ydist = building.yDistance(spoty)
+        total += ydist
+        if total > bestdist:  # break early when we already exceeded dist
+            break
+    return total
 
-# COMPUTE SMALLEST DISTANCE
+def computeBestDistances(spots, buildings, computeTotalDist):
+    distances = {}
+    bestdist = 1000000
+    while spots:
+        spot = spots.pop()
+        total = computeTotalDist(spot, buildings, bestdist)
+        if total < bestdist:
+            bestdist = total
+        # PERF use a >heapq< or bisect
+        distances.setdefault(total, [])
+        distances[total].append(spot)
+
+        # printdebug('\tTOT DIST:', total)
+    return distances
+
+s = time.time()
+distances = computeBestDistances(spots, buildings, computeTotalXDist)
+printdebug('x distance computation:', time.time() - s, 'sec')
+
+# GET SMALLEST X DIST
 s = time.time()
 least = min(distances.keys())
 dists = distances[least]
-# sorts tuples by (x, y) first by x than y. which is row then column.
-x, y = sorted(dists)[0]
-printdebug('smallest    distance:', time.time() - s, 'sec')
+printdebug('smallest   x distance:', time.time() - s, 'sec')
+
+# COMPUTE Y DIST
+s = time.time()
+distancesWithY = computeBestDistances(dists, buildings, computeTotalYDist)
+printdebug('y distance computation:', time.time() - s, 'sec')
+
+
+# COMPUTE SMALLEST DISTANCE
+s = time.time()
+def getSmallest(distances):
+    least = min(distances.keys())
+    dists = distances[least]
+    # sorts tuples by (x, y) first by x than y. which is row then column.
+    return sorted(dists)[0]
+x, y = getSmallest(distancesWithY)
+printdebug('smallest   y distance:', time.time() - s, 'sec')
 print(x + 1, y + 1) # convert to 1-indexed sytem
