@@ -38,25 +38,25 @@ def bfs_paths(graph, start, goals):
         neighs = graph[vertex]
         visits[start].add(vertex)
         for neigh in neighs:
-            for house, visit in visits.items():
-                if house != start and neigh in visit:
-                    # a = results[house]
-                    # b = results[start]
-                    # c = len(a) + len(b)
-                    printdebug('solution! - house', house, 'to', start)
-                    (_, other_path) = qs[house].pop()
-                    if not qs[house]:
-                        printdebug('WRONG sol?')
-                        yield None
-                        break
-                    last = other_path.pop()
-                    while last != neigh:
-                        last = other_path.pop()
-                        if not last:
-                            printdebug('WRONG sol 2?')
-                            yield None
-                            break
-                    yield path + [neigh] + other_path
+            # for house, visit in visits.items():
+            #     if house != start and neigh in visit:
+            #         # a = results[house]
+            #         # b = results[start]
+            #         # c = len(a) + len(b)
+            #         printdebug('solution! - house', house, 'to', start)
+            #         (_, other_path) = qs[house].pop()
+            #         if not qs[house]:
+            #             printdebug('WRONG sol?')
+            #             yield None
+            #             break
+            #         last = other_path.pop()
+            #         while last != neigh:
+            #             last = other_path.pop()
+            #             if not last:
+            #                 printdebug('WRONG sol 2?')
+            #                 yield None
+            #                 break
+            #         yield path + [neigh] + other_path
             if neigh in goals:
                 # results[start].append(neigh)
                 yield path + [neigh]
