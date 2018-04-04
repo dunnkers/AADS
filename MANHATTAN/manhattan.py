@@ -19,7 +19,7 @@ def printdebug(*s):
 # REDIRECT STDIN
 if "TEST" in os.environ:
     old_stdin = sys.stdin
-    sys.stdin = open('./MANHATTAN/2.in')
+    sys.stdin = open('./MANHATTAN/1.in')
 
 def peek(i, j):
     return None if i < 0 or i > n - 1 or j < 0 or j > m - 1 else (i, j)
@@ -50,7 +50,7 @@ def distanceTo(spot, building):
     return building.distance(spotrect)
 
 def findWidth(gen, i, spots):
-    width = 0
+    width = 1
     for j, cell in gen:  # tuple (j, cell)
         if cell == 0:
             spots.add((i, j))
@@ -163,3 +163,39 @@ dists = distances[least]
 x, y = sorted(dists)[0]
 printdebug('smallest    distance:', time.time() - s, 'sec')
 print(x + 1, y + 1) # convert to 1-indexed sytem
+
+
+
+# Python3 code to find sum of Manhattan
+# distances between all the pairs of
+# given points
+
+# Return the sum of distance of one axis.
+
+
+def distancesum(arr, n):
+
+    # sorting the array.
+    arr.sort()
+
+    # for each point, finding
+    # the distance.
+    res = 0
+    sum = 0
+    for i in range(n):
+        res += (arr[i] * i - sum)
+        sum += arr[i]
+
+    return res
+
+
+def totaldistancesum(x, y, n):
+    return distancesum(x, n) + distancesum(y, n)
+
+
+# Driven Code
+x = [-1, 1, 3, 2]
+y = [5, 6, 5, 3]
+n = len(x)
+print(totaldistancesum(x, y, n))
+
