@@ -32,9 +32,8 @@ houses = set(int(x) for x in input().split())
 visits = {house: set() for house in houses}
 qs = {house: [(house, [house])] for house in houses}
 def bfs_paths(graph, start, goals):
-    queue = [(start, [start])]
-    while queue:
-        (vertex, path) = queue.pop(0)
+    while qs[start]:
+        (vertex, path) = qs[start].pop(0)
         yield None
         neighs = graph[vertex]
         visits[start].add(vertex)
@@ -45,13 +44,25 @@ def bfs_paths(graph, start, goals):
                     # b = results[start]
                     # c = len(a) + len(b)
                     printdebug('solution! - house', house, 'to', start)
-                    yield path + [neigh]
+                    (_, other_path) = qs[house].pop()
+                    if not qs[house]:
+                        printdebug('WRONG sol?')
+                        yield None
+                        break
+                    last = other_path.pop()
+                    while last != neigh:
+                        last = other_path.pop()
+                        if not last:
+                            printdebug('WRONG sol 2?')
+                            yield None
+                            break
+                    yield path + [neigh] + other_path
             if neigh in goals:
                 # results[start].append(neigh)
                 yield path + [neigh]
             elif neigh not in visits[start]:
                 # results[start].append(neigh)
-                queue.append((neigh, path + [neigh]))
+                qs[start].append((neigh, path + [neigh]))
 # house BFS generators
 gens = [bfs_paths(graph, house, houses - set([house])) for house in houses]
 result = None
