@@ -166,13 +166,14 @@ while spots:
         xsum += xdist
         ydist = building.yDistance(spoty)
         ysum += ydist
+        total += ydist + xdist
         # if spot == (1,2) or spot == (2,2):
             # printdebug('\t→', building)
             # printdebug('\txdist =', xdist, 'ydist =', ydist)
         # total += distanceTo(spot, building)
-        # if total > bestdist: # break early when we already exceeded dist
-        #     break
-    total = xsum + ysum
+        if total > bestdist: # break early when we already exceeded dist
+            break
+    # total = xsum + ysum
     if total < bestdist:
         bestdist = total
     # PERF use a >heapq< or bisect
