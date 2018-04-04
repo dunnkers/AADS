@@ -29,15 +29,16 @@ for _ in range(m):
     graph[b].add(a)
 houses = set(int(x) for x in input().split())
 
-visits = {house: set() for house in houses}
-qs = {house: [(house, [house])] for house in houses}
 def bfs_paths(graph, start, goals):
-    while qs[start]:
-        (vertex, path) = qs[start].pop(0)
+    visited = set()
+    queue = deque([(start, [start])])
+    while queue:
+        (vertex, path) = queue.pop()
         yield None
         neighs = graph[vertex]
-        visits[start].add(vertex)
+        visited.add(vertex)
         for neigh in neighs:
+            route = path + [neigh]
             # for house, visit in visits.items():
             #     if house != start and neigh in visit:
             #         # a = results[house]
@@ -58,19 +59,23 @@ def bfs_paths(graph, start, goals):
             #                 break
             #         yield path + [neigh] + other_path
             if neigh in goals:
-                # results[start].append(neigh)
-                yield path + [neigh]
-            elif neigh not in visits[start]:
-                # results[start].append(neigh)
-                qs[start].append((neigh, path + [neigh]))
+                yield route
+            elif neigh not in visited:
+                queue.appendleft((neigh, route))
+
 # house BFS generators
 gens = [bfs_paths(graph, house, houses - set([house])) for house in houses]
+visits = {house: set() for house in houses}
+qs = {house: [(house, [house])] for house in houses}
 result = None
 while not result:
-    for gen in gens:
-        res = next(gen)
-        if res:
-            result = res
-            break
+    ress = [next(gen) for gen in gens]
+    if any(ress):
+        result = min(map(len, filter(None, ress)))
+    # for gen in gens:
+    #     res = next(gen)
+    #     if res:
+    #         result = res
+    #         # break
 
-print(len(result) - 1)
+print(result - 1)
